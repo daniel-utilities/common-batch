@@ -2,12 +2,9 @@
 # To install this .gitconfig file:
 #	git config --local include.path ../.gitconfig
 
-#### SECTION: TEMPLATE_VSCODE_PROJECT
+#### SECTION: TEMPLATE_PROJECT
 
 [core]
 	hooksPath = scripts/git/hooks
-
-[branch "main"]
-    mergeOptions = --ff-only
 
 ####
