@@ -1,0 +1,55 @@
+// TODO: Rename this file to the correct project name.
+{
+	"folders": [
+		{	
+			"path": "."
+		},
+		{	
+			"name": "Reference",
+			"path": "P:\\_Reference",
+  		},
+		{
+  			"name": "Reference",
+  			"path": "/mnt/p/_Reference"
+  		}
+	],
+	"settings": {
+		"terminal.integrated.profiles.linux": {
+			"bash": {
+				"path": "bash",
+				"icon": "terminal-bash"
+			},
+			"python": {
+				"path": "python3",
+				"args": []
+			}
+		},
+		"terminal.integrated.profiles.windows": {
+			"PowerShell": {
+				"source": "PowerShell",
+				"icon": "terminal-powershell"
+			},
+			"Command Prompt": {
+				"path": [
+					"${env:windir}\\Sysnative\\cmd.exe",
+					"${env:windir}\\System32\\cmd.exe"
+				],
+				"args": [],
+				"icon": "terminal-cmd"
+			},
+			"Git Bash": {
+				"source": "Git Bash"
+			},
+			"WSL (Default Distro)": {
+				"path": "C:\\Windows\\System32\\wsl.exe",
+				"args": []
+			},
+			"Python": {
+				"path": "python.exe",
+				"args": []
+			}
+		},
+		"terminal.integrated.defaultProfile.windows": "PowerShell",
+		"terminal.integrated.defaultProfile.linux": "bash"
+	}
+}

@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    // OPTIONAL: Add debug configurations.
+    // Press F1 to open command menu, then run "Debug: Add Configuration".
+    // Python Reference:    https://code.visualstudio.com/docs/python/debugging
+    // C/C++ Reference:     https://code.visualstudio.com/docs/cpp/launch-json-reference
+    //
+    // "configurations": [
+    //     {
+    //         "name": "",
+    //         "type": "",
+    //         "request": "launch"
+    //     }
+    // ]
+    "configurations": [
+    ]
+}

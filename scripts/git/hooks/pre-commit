@@ -1,0 +1,29 @@
+#!/bin/sh
+
+# Git Pre-Commit Hook
+# https://git-scm.com/docs/githooks#_pre_commit
+#
+# Installation:
+#   From root of the repository:
+#   1. git config --local core.hooksPath ./scripts/git/hooks
+#   2. chmod +x ./scripts/git/hooks/*
+#
+
+echo "Running Git Hook: $0"
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+abort() {
+    branch="$1"
+    echo "COMMIT BLOCKED: hook 'pre-commit' disallows commits to branch '$branch'."
+    exit 1
+}
+
+
+case "$branch" in
+  main)       abort "$branch" ;;
+  upstream*)  abort "$branch" ;;
+  template*)  abort "$branch" ;;
+  *)          echo ""
+esac
+

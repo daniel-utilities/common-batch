@@ -1,0 +1,16 @@
+{
+    "version": "2.0.0",
+    // OPTIONAL: Add task configurations.
+    // Press F1 to open command menu and run "Tasks: Configure Task".
+    // Reference: https://code.visualstudio.com/docs/editor/tasks
+    //
+    // "tasks": [
+    //     {
+    //         "label": "",
+    //         "type": "",
+    //         ...
+    //     }
+    // ]
+    "tasks": [
+    ]
+}

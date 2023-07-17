@@ -1,0 +1,11 @@
+# https://git-scm.com/docs/gitattributes
+
+
+#### SECTION: TEMPLATE_VSCODE_PROJECT ####
+
+* text=auto eol=lf
+*.{bat,[bB][aA][tT]} text eol=crlf
+*.{cmd,[cC][mM][dD]} text eol=crlf
+*.{inf,[iI][nN][fF]} text eol=crlf
+
+####

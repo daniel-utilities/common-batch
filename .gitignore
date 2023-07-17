@@ -1,0 +1,41 @@
+#### SECTION: PROJECT ####
+# TODO: Add project-specific exclusions
+####
+
+
+#### SECTION: TEMPLATE_VSCODE_PROJECT ####
+
+# Auto-generated VS Code files
+.vscode/*
+
+# Project settings file is generated automatically from extension: "franmastromarino.vs-code-settings-os"
+.vscode/settings.json
+
+# Keep other project-specific settings
+!.vscode/*.code-snippets
+!.vscode/settings.all.json
+!.vscode/settings.windows.json
+!.vscode/settings.macos.json
+!.vscode/settings.linux.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/c_cpp_properties.json
+!.vscode/devcontainer.json
+!.vscode/launch.json
+
+# Log files
+*.log
+log/*
+logs/*
+!/log/.gitkeep
+
+# Temporary files
+*.temp
+*.tmp
+
+# Build files
+build/*
+!build/.gitkeep
+
+####

@@ -1,0 +1,10 @@
+{
+    // OPTIONAL: Add extension recommendations.
+    "recommendations": [
+        "actboy168.tasks",
+        "foxundermoon.shell-format",
+        "franmastromarino.vs-code-settings-os",
+        "mutantdino.resourcemonitor",
+        "ms-vscode-remote.vscode-remote-extensionpack"
+    ]
+}
