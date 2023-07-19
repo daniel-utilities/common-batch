@@ -73,18 +73,21 @@ chmod +x install.sh
 <!-- OPTIONAL: Add Usage section. -->
 
 ### Project file structure:
+
+All projects will contain the following files (at minimum):
+
 ```
 .vscode/                    VSCode settings applied to this folder.
-        extensions.json         Extensions required for project development.
-        launch.json             Debugger launch configurations.
-        tasks.json              Non-debug task configurations.
-        settings.all.json       Settings applied on all systems.
-        settings.linux.json     Settings applied when developing on Linux.
-        settings.windows.json   Settings applied when developing on Windows.
+├── extensions.json           Extensions required for project development.
+├── launch.json               Debugger launch configurations.
+├── tasks.json                Non-debug task configurations.
+├── settings.all.json         Settings applied on all systems.
+├── settings.linux.json       Settings applied when developing on Linux.
+└── settings.windows.json     Settings applied when developing on Windows.
 
 scripts/                    Utility scripts.
-        git/hooks/              Bash scripts triggered by various Git commands.
-            pre-commit              Bash script which runs before every commit.
+└── git/hooks/                Bash scripts triggered by various Git commands.
+    └── pre-commit              Runs before every commit (but not merge commits).
 
 src/                        Project source code.
 
@@ -96,20 +99,35 @@ project.code-workspace      VSCode settings applied to the whole workspace.
 README.md                   This file.
 ```
 
-New projects should make use of the following naming convention where applicable:
+Projects may include additional files/folders, but should use the following naming convention wherever possible:
 
 ```
-build/                      Build output.
+.devcontainer/              VSCode config for developing inside a Docker container.
+└── devcontainer.json
+.github/                    Github config files.
+└── workflows/                YML files for Github Actions.
+    └── action.yml                
+bin/                        Binary executables needed during build and/or runtime.
+└── do_something.exe
+build/                      Build/compilation intermediate files.
+└── myclass.o(.d,.class)
 config/                     Config files needed during build and/or runtime.
-doc/                        Documentation.
+└── settings.json
+data/                       Data files consumed or produced by the program.
+└── data.csv(.json,.xlsx)
+docs/                       Documentation.
+└── package.md(.html)
 lib/                        Libraries required during build and/or runtime.
-        A/                      Library A project directory.
-            src/                    Source code for A.
-        B.a(.so,.dll,.jar)      Library B (pre-built binary).
-log/                        Log files.
+├── A/                        Library A project directory. May be a Git Submodule.
+│   └── src/                
+└── B.a(.so,.dll,.jar)        Library B (pre-built binary).
+logs/                       Log files.
+└── out.log(.txt)
+model/                      CAD files or other hardware description files.
+└── part.ipt(.sld)
 res/                        Miscellaneous resources needed during build and/or runtime.
-        gallery/                Images used by README.md.
-test/                       Unit testing scripts.
+└── gallery/                  Images used by README.md.
+tests/                      Unit testing scripts.
 ```
 
 
