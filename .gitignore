@@ -38,4 +38,11 @@ tmp/*
 build/*
 !build/.gitkeep
 
+# Other filetypes
+.svn/*
+.hg/*
+.CVS/*
+.DS_Store/*
+Thumbs.db
+
 ####
