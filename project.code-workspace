@@ -6,17 +6,7 @@
 		// Project folder:
 		{	
 			"path": "."
-		},
-
-		// Reference folders (Windows and Linux):
-		{	
-			"name": "Reference",
-			"path": "P:/_Reference",
-  		},
-		{
-  			"name": "Reference",
-  			"path": "/mnt/p/_Reference"
-  		},
+		}
 	],
 
 	// Settings applied to all folders in this workspace.
@@ -84,6 +74,7 @@
 			"Bash": {
 				"path": "bash",
 				"args": [],
+				"overrideName": true,
 				"icon": "terminal-bash"
 			},
 		},
@@ -96,8 +87,9 @@
 		"terminal.integrated.profiles.windows": {
 			"PowerShell": {
 				"source": "PowerShell",
+				"args": [],
+				"overrideName": true,
 				"icon": "terminal-powershell",
-				"args": []
 			},
 			"Command Prompt": {
 				"path": [
@@ -105,14 +97,20 @@
 					"${env:windir}\\System32\\cmd.exe"
 				],
 				"args": [],
+				"overrideName": true,
 				"icon": "terminal-cmd"
 			},
 			"Git Bash": {
-				"source": "Git Bash"
+				"source": "Git Bash",
+				"args": [],
+				"overrideName": true,
+				"icon": "terminal-bash"
 			},
-			"WSL (Default Distro)": {
+			"WSL2 (Default Distro)": {
 				"path": "C:\\Windows\\System32\\wsl.exe",
-				"args": []
+				"args": [],
+				"overrideName": true,
+				"icon": "terminal-bash"
 			}
 		},
 		"terminal.integrated.env.windows": {
