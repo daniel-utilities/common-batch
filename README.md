@@ -157,7 +157,7 @@ and a remote for each parent template:
 5. Install the repo's .gitconfig file and make scripts executable:
 ```
     git config --local include.path ../.gitconfig
-    chmod +x ./scripts/git/hooks/*
+    chmod --recursive --verbose +x "./scripts"
 ```
 
 
