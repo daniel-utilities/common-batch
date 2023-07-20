@@ -3,7 +3,9 @@ setlocal
 
 for %%Q in ("%~dp0\.") do set "parent_dir=%%~fQ"
 set "working_dir=%CD%"
+for /F "delims=" %%i in ("%working_dir%") do set "project_name=%%~ni"
 set "scripts_dir=scripts"
+
 
 :: Checks
 if not exist "%working_dir%\.git" (
@@ -15,6 +17,13 @@ if not exist "%working_dir%\.gitconfig" (
     echo ERROR: .gitconfig not found.
     exit /b 1
 )
+
+:: if [[ "$OS" =~ "Windows" ]]; then   # Git Bash
+::     batfile="${0%.*}.bat"
+::     "$batfile"      # Run the same-named .bat file
+::     exit $?
+:: fi
+
 
 :: Start
 echo.
@@ -34,6 +43,9 @@ if %ERRORLEVEL% neq 0 (
 
 echo.
 echo Complete.
+
+
+:: End
 
 endlocal
 exit /b 0
