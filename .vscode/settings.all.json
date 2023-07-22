@@ -1,5 +1,23 @@
 {
     "git.branchProtection": [
         "main"
-    ]
+    ],
+    "git.openRepositoryInParentFolders": "always",
+    "git.autofetch": "all",
+
+    "files.eol": "\n",
+    "[bat]": {
+        "files.eol": "\r\n"
+    },
+    "[cmd]": {
+        "files.eol": "\r\n"
+    },
+    "[inf]": {
+        "files.eol": "\r\n"
+    },
+
+    "shellcheck.exclude": [
+        "2181"
+    ],
+    "shellcheck.useWorkspaceRootAsCwd": true
 }

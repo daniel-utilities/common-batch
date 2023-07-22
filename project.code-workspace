@@ -5,8 +5,18 @@
 		
 		// Project folder:
 		{	
-			"path": "."
-		}
+			"path": ".",
+		},
+
+		// Reference folders (Windows and Linux-relative paths)
+		{
+			"name": "Reference (Windows)",
+			"path": "P:\\_Reference"
+		},
+		{
+			"name": "Reference (Linux)",
+			"path": "/mnt/p/_Reference",
+		},
 	],
 
 	// Settings applied to all folders in this workspace.
@@ -57,18 +67,6 @@
 			"**/build/**": true,
 		},
 
-		// Use unix-style line endings (\n) for all text files except Windows-specific filetypes.
-		"files.eol": "\n",
-		"[bat]": {
-			"files.eol": "\r\n"
-		},
-		"[cmd]": {
-			"files.eol": "\r\n"
-		},
-		"[inf]": {
-			"files.eol": "\r\n"
-		},
-
 		// Linux Terminals
 		"terminal.integrated.profiles.linux": {
 			"Bash": {
@@ -81,7 +79,7 @@
 		"terminal.integrated.env.linux": {
 			// "ENVIRONMENT_VARIABLE": "value"
 		},
-		"terminal.integrated.defaultProfile.linux": "Bash",
+		// "terminal.integrated.defaultProfile.linux": "Bash",
 
 		// Windows Terminals
 		"terminal.integrated.profiles.windows": {
@@ -116,6 +114,6 @@
 		"terminal.integrated.env.windows": {
 			// "ENVIRONMENT_VARIABLE": "value"
 		},
-		"terminal.integrated.defaultProfile.windows": "PowerShell",
-	}
+		// "terminal.integrated.defaultProfile.windows": "PowerShell",
+	},
 }

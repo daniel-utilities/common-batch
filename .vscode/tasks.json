@@ -12,5 +12,10 @@
     //     }
     // ]
     "tasks": [
+        {
+            "label": "Refresh Settings (.vscode/settings.json)",
+            "command": "${command:vs-code-settings-os.updateSettings}",
+            "problemMatcher": []
+        }
     ]
 }
