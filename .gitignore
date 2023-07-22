@@ -34,6 +34,8 @@ logs/*
 temp/*
 tmp/*
 *.bak
+*.swp
+*~
 
 # Build files
 build/*

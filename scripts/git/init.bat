@@ -26,7 +26,7 @@ if not exist "%working_dir%\.gitconfig" (
 
 
 :: Start
-echo.
+echo(
 echo Installing .gitconfig...
 
 git config --local include.path ../.gitconfig
@@ -41,7 +41,7 @@ if %ERRORLEVEL% neq 0 (
 :: 
 :: chmod --recursive --verbose +x "$scripts_dir"
 
-echo.
+echo(
 echo Complete.
 
 

@@ -32,6 +32,7 @@ REPO:   template_project
 - Windows 10 or later (tested on Windows 11)
 - Autodesk Inventor 2023
 - Git ([from here](https://git-scm.com/download/win), or similar)
+- Make ([from here](https://gnuwin32.sourceforge.net/packages/make.htm), or similar)
 
 #### Linux:
 - Ubuntu 20.04 (tested)

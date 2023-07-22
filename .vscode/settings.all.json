@@ -5,6 +5,7 @@
     "git.openRepositoryInParentFolders": "always",
     "git.autofetch": "all",
 
+
     "files.eol": "\n",
     "[bat]": {
         "files.eol": "\r\n"
@@ -15,6 +16,14 @@
     "[inf]": {
         "files.eol": "\r\n"
     },
+
+
+    "[makefile]": {
+        "editor.renderWhitespace": "boundary",
+        "editor.detectIndentation": false,
+        "editor.insertSpaces": false
+    },
+
 
     "shellcheck.exclude": [
         "2181"
