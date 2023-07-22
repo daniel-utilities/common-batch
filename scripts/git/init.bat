@@ -7,7 +7,7 @@ for /F "delims=" %%i in ("%working_dir%") do set "project_name=%%~ni"
 set "scripts_dir=scripts"
 
 
-:: Checks
+rem Checks
 if not exist "%working_dir%\.git" (
     echo ERROR: Script must be run from root of Git repository.
     exit /b 1
@@ -18,15 +18,26 @@ if not exist "%working_dir%\.gitconfig" (
     exit /b 1
 )
 
-:: if [[ "$OS" =~ "Windows" ]]; then   # Git Bash
-::     batfile="${0%.*}.bat"
-::     "$batfile"      # Run the same-named .bat file
-::     exit $?
-:: fi
+rem if [[ "$OS" =~ "Windows" ]]; then   # Git Bash
+rem     batfile="${0%.*}.bat"
+rem     "$batfile"      # Run the same-named .bat file
+rem     exit $?
+rem fi
 
 
-:: Start
-echo(
+rem Start
+echo. 
+echo Stashing local changes...
+git stash --include-untracked
+
+echo.
+echo Pulling latest revisions...
+git checkout main
+git pull origin main
+git checkout dev
+git pull origin dev
+
+echo.
 echo Installing .gitconfig...
 
 git config --local include.path ../.gitconfig
@@ -36,16 +47,13 @@ if %ERRORLEVEL% neq 0 (
     exit /b 1
 )
 
-:: echo ""
-:: echo "Making scripts executable..."
-:: 
-:: chmod --recursive --verbose +x "$scripts_dir"
-
-echo(
-echo Complete.
+rem echo ""
+rem echo "Making scripts executable..."
+rem 
+rem chmod --recursive --verbose +x "$scripts_dir"
 
 
-:: End
+rem End
 
 endlocal
 exit /b 0

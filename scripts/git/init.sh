@@ -27,6 +27,17 @@ fi
 
 # Start
 echo ""
+echo "Stashing local changes..."
+git stash --include-untracked
+
+echo ""
+echo "Pulling latest revisions..."
+git checkout main
+git pull origin main
+git checkout dev
+git pull origin dev
+
+echo ""
 echo "Installing .gitconfig..."
 
 git config --local include.path ../.gitconfig
@@ -40,9 +51,6 @@ echo ""
 echo "Making scripts executable..."
 
 chmod --recursive --verbose +x "$scripts_dir"
-
-echo ""
-echo "Complete."
 
 
 # End
