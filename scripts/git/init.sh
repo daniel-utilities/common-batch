@@ -34,8 +34,16 @@ echo ""
 echo "Pulling latest revisions..."
 git checkout main
 git pull origin main
+if [[ $? != 0 ]]; then
+    echo "ERROR: Failed while pulling from origin/main."
+    exit 1
+fi
 git checkout dev
 git pull origin dev
+if [[ $? != 0 ]]; then
+    echo "ERROR: Failed while pulling from origin/dev."
+    exit 1
+fi
 
 echo ""
 echo "Installing .gitconfig..."
@@ -43,7 +51,7 @@ echo "Installing .gitconfig..."
 git config --local include.path ../.gitconfig
 
 if [[ $? != 0 ]]; then
-    echo ERROR: Could not install .gitconfig. Failed to modify local include.path.
+    echo "ERROR: Could not install .gitconfig. Failed to modify local include.path."
     exit 1
 fi
 

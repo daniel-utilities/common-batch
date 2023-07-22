@@ -34,8 +34,16 @@ echo.
 echo Pulling latest revisions...
 git checkout main
 git pull origin main
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Failed while pulling from origin/main.
+    exit /b 1
+)
 git checkout dev
 git pull origin dev
+if %ERRORLEVEL% neq 0 (
+    echo ERROR: Failed while pulling from origin/dev.
+    exit /b 1
+)
 
 echo.
 echo Installing .gitconfig...
