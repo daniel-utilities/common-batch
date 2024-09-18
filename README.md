@@ -86,7 +86,7 @@ All projects will contain the following files (at minimum):
 ├── settings.linux.json       Settings applied when developing on Linux.
 └── settings.windows.json     Settings applied when developing on Windows.
 
-scripts/                    Utility scripts.
+.mgmt/                      Management resources
 └── git/hooks/                Bash scripts triggered by various Git commands.
     └── pre-commit              Runs before every commit (but not merge commits).
 
@@ -107,7 +107,7 @@ Projects may include additional files/folders, but should use the following nami
 └── devcontainer.json
 .github/                    Github config files.
 └── workflows/                YML files for Github Actions.
-    └── action.yml                
+    └── action.yml
 bin/                        Binary executables needed during build and/or runtime.
 └── do_something.exe
 build/                      Build/compilation intermediate files.
@@ -120,7 +120,7 @@ docs/                       Documentation.
 └── package.md(.html)
 lib/                        Libraries required during build and/or runtime.
 ├── A/                        Library A project directory. May be a Git Submodule.
-│   └── src/                
+│   └── src/
 └── B.a(.so,.dll,.jar)        Library B (pre-built binary).
 logs/                       Log files.
 └── out.log(.txt)
@@ -128,6 +128,8 @@ model/                      CAD files or other hardware description files.
 └── part.ipt(.sld)
 res/                        Miscellaneous resources needed during build and/or runtime.
 └── gallery/                  Images used by README.md.
+scripts/                    Utility scripts.
+└── script.sh(.bat,.ps1)
 tests/                      Unit testing scripts.
 ```
 
@@ -135,7 +137,7 @@ tests/                      Unit testing scripts.
 ### Creating a new project from this template:
 1. Create a new repository on Github, i.e. `new_repo`.
 2. Create a new local repository with a remote named `origin` pointing to Github,
-and a remote for each parent template:  
+and a remote for each parent template:
 ```
     mkdir new_repo
     cd new_repo
@@ -163,7 +165,7 @@ and a remote for each parent template:
 
 
 ### Committing changes to the project:
-1. Only commit changes to `dev` branch; **never** commit directly to `main`!  
+1. Only commit changes to `dev` branch; **never** commit directly to `main`!
 Commits (other than Merge commits) to `main` will be blocked by the pre-commit hook. See scripts/git/hooks/pre-commit for details.
 ```
     git checkout dev

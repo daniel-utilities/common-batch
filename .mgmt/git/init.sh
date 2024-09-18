@@ -4,7 +4,7 @@
 parent_dir="$(dirname "$(readlink -f "$0")")"
 working_dir="$PWD"
 project_name="$(basename "$working_dir")"
-scripts_dir="scripts"
+scripts_dir="$parent_dir"
 
 
 # Checks
@@ -27,25 +27,6 @@ fi
 
 # Start
 echo ""
-echo "Stashing local changes..."
-git stash --include-untracked
-
-echo ""
-echo "Pulling latest revisions..."
-git checkout main
-git pull origin main
-if [[ $? != 0 ]]; then
-    echo "ERROR: Failed while pulling from origin/main."
-    exit 1
-fi
-git checkout dev
-git pull origin dev
-if [[ $? != 0 ]]; then
-    echo "ERROR: Failed while pulling from origin/dev."
-    exit 1
-fi
-
-echo ""
 echo "Installing .gitconfig..."
 
 git config --local include.path ../.gitconfig
@@ -58,7 +39,7 @@ fi
 echo ""
 echo "Making scripts executable..."
 
-chmod --recursive --verbose +x "$scripts_dir"
+chmod --recursive --verbose u+x "$scripts_dir"
 
 
 # End

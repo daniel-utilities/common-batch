@@ -7,6 +7,6 @@
 #### SECTION: TEMPLATE_PROJECT
 
 [core]
-	hooksPath = scripts/git/hooks
+	hooksPath = .mgmt/git/hooks
 
 ####
