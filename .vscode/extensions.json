@@ -3,9 +3,7 @@
         // #### SECTION: TEMPLATE_PROJECT   ####
         "franmastromarino.vs-code-settings-os",
         "ms-vscode-remote.vscode-remote-extensionpack",
-        "ms-azuretools.vscode-docker",
         "actboy168.tasks",
-        "ms-vscode.powershell",
         "foxundermoon.shell-format",
         "timonwong.shellcheck",
         // ####
