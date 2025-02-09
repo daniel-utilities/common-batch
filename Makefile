@@ -15,7 +15,11 @@ endif
 # Use delayed expansion '=' so FILESEP can be corrected later.
 #   VAR = $(subst /,$(FILESEP),./path/to/a/file)
 SOURCE_DIR  = $(subst /,$(FILESEP),./src)
+<<<<<<< HEAD
 MGMT_DIR    = $(subst /,$(FILESEP),./.mgmt)
+=======
+MGMT_DIR    = $(subst /,$(FILESEP),./scripts)
+>>>>>>> origin/dev
 IMPORTS_DIR = $(subst /,$(FILESEP),$(MGMT_DIR)/make)
 INIT_SCRIPT = $(subst /,$(FILESEP),$(MGMT_DIR)/git/init$(SCRIPT_EXT))
 
