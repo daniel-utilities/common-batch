@@ -23,7 +23,6 @@ REPO:   template_project
 <br/>
 
 
-
 <!-- OPTIONAL: Add System Requirements section. -->
 <!--
 ## System Requirements
@@ -42,11 +41,40 @@ REPO:   template_project
 -->
 
 
+## Initial Setup
 
-<!-- OPTIONAL: Add Installation section. -->
+### Creating a new project from this template:
+1. Create a new repository on Github, i.e. `new_repo`.
+2. Create a new local repository with a remote named `origin` pointing to Github,
+and a remote for each parent template:
+```
+    mkdir new_repo
+    cd new_repo
+    git init
+    git remote add origin git@github.com:my_organization/new_repo.git
+    git remote add template_project https://github.com/daniel-templates/template_project.git
+    git fetch --all
+```
+3. Create branch `main` (setting as default), point it at the parent's `main`, and set its *upstream* (push/pull) to `origin`.
+```
+    git branch -M main
+    git reset --hard template_project/main
+    git push --force -u origin main
+```
+4. Create branch `dev`, point it to the same commit as `main`, and set its *upstream* (push/pull) to `origin`.
+```
+    git checkout -B dev main
+    git push --force -u origin dev
+```
+5. Install the repo's .gitconfig file and make scripts executable:
+```
+    git config --local include.path ../.gitconfig
+    chmod --recursive --verbose +x "./.mgmt"
+```
+
+
+<!-- OPTIONAL: Add download and installation instructions -->
 <!--
-## Installation
-
 #### Downloading the repository:
 In a terminal window, clone this repo to your system *with submodules*:
 ```
@@ -57,21 +85,20 @@ If you already cloned the repository without ```--recurse-submodules```, you'll 
 git submodule update --init --recursive
 ```
 
+
 #### Installing the software:
 Enter the project directory using ```cd template_project``` , then run the following commands to install:
 ```
 chmod +x install.sh
 ./install.sh
 ```
+-->
 
 <br/>
--->
 
 
 
 ## Usage
-
-<!-- OPTIONAL: Add Usage section. -->
 
 ### Project file structure:
 
@@ -134,36 +161,6 @@ tests/                      Unit testing scripts.
 ```
 
 
-### Creating a new project from this template:
-1. Create a new repository on Github, i.e. `new_repo`.
-2. Create a new local repository with a remote named `origin` pointing to Github,
-and a remote for each parent template:
-```
-    mkdir new_repo
-    cd new_repo
-    git init
-    git remote add origin git@github.com:my_organization/new_repo.git
-    git remote add template_project https://github.com/daniel-templates/template_project.git
-    git fetch --all
-```
-3. Create branch `main` (setting as default), point it at the parent's `main`, and set its *upstream* (push/pull) to `origin`.
-```
-    git branch -M main
-    git reset --hard template_project/main
-    git push --force -u origin main
-```
-4. Create branch `dev`, point it to the same commit as `main`, and set its *upstream* (push/pull) to `origin`.
-```
-    git checkout -B dev main
-    git push --force -u origin dev
-```
-5. Install the repo's .gitconfig file and make scripts executable:
-```
-    git config --local include.path ../.gitconfig
-    chmod --recursive --verbose +x "./scripts"
-```
-
-
 ### Committing changes to the project:
 1. Only commit changes to `dev` branch; **never** commit directly to `main`!
 Commits (other than Merge commits) to `main` will be blocked by the pre-commit hook. See scripts/git/hooks/pre-commit for details.
@@ -199,7 +196,6 @@ Commits (other than Merge commits) to `main` will be blocked by the pre-commit h
 
 
 
-<!-- OPTIONAL: Add Documentation section. -->
 <!--
 ## Documentation:
 Please refer to documentation directory: [doc/](doc/)
@@ -209,7 +205,6 @@ Please refer to documentation directory: [doc/](doc/)
 
 
 
-<!-- OPTIONAL: Add photo gallery. -->
 <!--
 ## Gallery
 
