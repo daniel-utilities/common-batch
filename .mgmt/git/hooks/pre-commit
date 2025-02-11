@@ -1,17 +1,25 @@
 #!/bin/sh
-
-# Git Pre-Commit Hook
-# https://git-scm.com/docs/githooks#_pre_commit
+#===============================================================================
+# pre-commit
+#
+# Git Pre-Commit Hook Script
+#   Runs prior to 'git commit', but not 'git merge' or 'git rebase'.
+#   Returning a nonzero exit code will abort the commit.
+#
+# Documentation:
+#   https://git-scm.com/docs/githooks#_pre_commit
 #
 # Installation:
-#   From root of the repository:
-#   1. git config --local core.hooksPath ./scripts/git/hooks
-#   2. chmod +x ./scripts/git/hooks/*
+#   Run from root of the repository:
+#     git config --local core.hooksPath .mgmt/git/hooks
+#     chmod +x .mgmt/git/hooks/*
 #
+#   Or, add to .mgmt/git/.gitconfig:
+#     [core]
+#       hooksPath = .mgmt/git/hooks
+#
+#===============================================================================
 
-echo "Running Git Hook: $0"
-
-branch="$(git rev-parse --abbrev-ref HEAD)"
 
 abort() {
     branch="$1"
@@ -20,6 +28,11 @@ abort() {
 }
 
 
+echo "Running Git Hook: $0"
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+# Disallow commits to specific branches
 case "$branch" in
   main)       abort "$branch" ;;
   upstream*)  abort "$branch" ;;

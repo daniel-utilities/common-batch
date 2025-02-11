@@ -1,12 +1,26 @@
-# https://git-scm.com/docs/gitattributes
+#===============================================================================
+# .gitattributes
+#
+# Documentation:
+#   https://git-scm.com/docs/gitattributes
+#
+#===============================================================================
 
 
-#### SECTION: TEMPLATE_PROJECT ####
+#-------------------------------------------------------------------------------
+#  UPSTREAM: daniel-templates/template_project
+#-------------------------------------------------------------------------------
 
-# Use unix-style line endings (\n) for all text files except Windows-specific filetypes.
+# Force Unix-style line endings (\n) for all text files except certain
+#   Windows-specific filetypes (\r\n)
 * text=auto eol=lf
 *.{bat,[bB][aA][tT]} text eol=crlf
 *.{cmd,[cC][mM][dD]} text eol=crlf
 *.{reg,[iI][nN][fF]} text eol=crlf
 
-####
+
+#-------------------------------------------------------------------------------
+#  UPSTREAM: (this project)
+#-------------------------------------------------------------------------------
+
+
