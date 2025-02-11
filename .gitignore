@@ -27,6 +27,7 @@
 log/*
 logs/*
 !/log/.gitkeep
+!/logs/.gitkeep
 
 # Temporary files
 *.temp
