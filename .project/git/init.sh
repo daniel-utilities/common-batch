@@ -29,7 +29,7 @@ fi
 echo ""
 echo "Installing .gitconfig..."
 
-git config --local include.path ../.gitconfig
+git config --local include.path ../.project/git/.gitconfig
 
 if [[ $? != 0 ]]; then
     echo "ERROR: Could not install .gitconfig. Failed to modify local include.path."

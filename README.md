@@ -89,8 +89,7 @@ git submodule update --init --recursive
 #### Installing the software:
 Enter the project directory using ```cd template_project``` , then run the following commands to install:
 ```
-chmod +x install.sh
-./install.sh
+make install
 ```
 -->
 

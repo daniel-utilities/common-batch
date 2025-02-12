@@ -1,6 +1,6 @@
 {
     "makefile.makePath": "make",
-    "makefile.makefilePath": "${fileWorkspaceFolder}/Makefile",
-    "makefile.extensionOutputFolder": "${fileWorkspaceFolder}/logs/vscode_makefile_extension",
-    "makefile.extensionLog": "${fileWorkspaceFolder}/logs/vscode_makefile_extension.log"
+    "makefile.makefilePath": "${workspaceFolder}/Makefile",
+    "makefile.extensionOutputFolder": "${workspaceFolder}/logs/vscode_makefile_extension",
+    "makefile.extensionLog": "${workspaceFolder}/logs/vscode_makefile_extension.log"
 }
