@@ -1,5 +1,8 @@
+#===============================================================================
+# Makefile
+#===============================================================================
 
-#### MAKEFILE DEBUGGING
+#### DEBUGGING
 ifneq "$(SHOWTARGETS)" "false"
     PRINT_TRACE = @ $(LINE) $(CMDSEP) $(ECHO) '======== Target:  $@  ========' $(CMDSEP) $(LINE)
 else
@@ -15,13 +18,8 @@ endif
 # Use delayed expansion '=' so FILESEP can be corrected later.
 #   VAR = $(subst /,$(FILESEP),./path/to/a/file)
 SOURCE_DIR  = $(subst /,$(FILESEP),./src)
-<<<<<<< HEAD
-MGMT_DIR    = $(subst /,$(FILESEP),./.mgmt)
-=======
-MGMT_DIR    = $(subst /,$(FILESEP),./scripts)
->>>>>>> origin/dev
-IMPORTS_DIR = $(subst /,$(FILESEP),$(MGMT_DIR)/make)
-INIT_SCRIPT = $(subst /,$(FILESEP),$(MGMT_DIR)/git/init$(SCRIPT_EXT))
+IMPORTS_DIR = $(subst /,$(FILESEP),./.project/make)
+INIT_SCRIPT = $(subst /,$(FILESEP),./.project/git/init$(SCRIPT_EXT))
 
 
 #### IMPORTS
@@ -38,7 +36,7 @@ all: init
 
 .PHONY: init
 init:
-ifneq "$(shell git config --local --get include.path)" "../.gitconfig"
+ifneq "$(shell git config --local --get include.path)" "../.project/git/.gitconfig"
 	$(PRINT_TRACE)
 	$(V) $(INIT_SCRIPT)
 endif

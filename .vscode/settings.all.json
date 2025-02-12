@@ -5,7 +5,6 @@
     "git.openRepositoryInParentFolders": "always",
     "git.autofetch": "all",
 
-
     "files.eol": "\n",
     "[bat]": {
         "files.eol": "\r\n"
@@ -24,9 +23,13 @@
         "editor.insertSpaces": false
     },
 
-
     "shellcheck.exclude": [
         "2181"
     ],
-    "shellcheck.useWorkspaceRootAsCwd": true
+    "shellcheck.useWorkspaceRootAsCwd": true,
+
+	"makefile.configurations": [
+
+	],
+    "makefile.defaultLaunchConfiguration": null
 }

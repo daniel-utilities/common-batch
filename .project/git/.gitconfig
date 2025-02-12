@@ -1,0 +1,24 @@
+#===============================================================================
+# .gitconfig
+#
+# Documentation:
+#   https://git-scm.com/docs/git-config
+#
+# WARNING: Modifying this file may break Git!
+#
+# To install this .gitconfig file:
+#	git config --local include.path ../.project/git/.gitconfig
+#
+#===============================================================================
+
+
+[core]
+	#---------------------------------------------------------------------------
+	#  UPSTREAM: daniel-templates/template_project
+	#---------------------------------------------------------------------------
+	hooksPath = .project/git/hooks
+
+	#---------------------------------------------------------------------------
+	#  UPSTREAM: (this project)
+	#---------------------------------------------------------------------------
+

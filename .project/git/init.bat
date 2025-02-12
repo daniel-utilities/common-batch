@@ -39,7 +39,7 @@ if %ERRORLEVEL% neq 0 (
 :: echo ""
 :: echo "Making scripts executable..."
 ::
-:: chmod --recursive --verbose +x "$scripts_dir"
+:: chmod --recursive --verbose u+x,g+x "$scripts_dir"
 
 
 :: End

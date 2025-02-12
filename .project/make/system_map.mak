@@ -1,4 +1,25 @@
+#===============================================================================
+#===============================================================================
 # system_map.mak
+#
+# Defines mappings between common shell commands and their platform-specific
+# variations.
+#
+# Usage:
+#
+#   Include in makefile:
+#
+#     include .project/make/system_map.mak
+#
+#   Run a platform-independent shell command:
+#
+#     files := $(shell $(LS) "*.c")
+#
+#   Create a platform-independent file path:
+#
+#     VAR := $(subst /,$(FILESEP),./path/to/a/file)
+#
+#===============================================================================
 
 
 #### SHELL PREFERENCES
@@ -93,14 +114,14 @@ endif
 ifeq "$(SHELL_TYPE)" "CMD"
     .SHELLFLAGS := /c
     CMDSEP := &
-    NOP := call
+    NOP := 2>nul call :nolabel
     CHMOD := $(NOP)
-    ECHO := echo
-    LINE := echo.
-    LS := dir /b
-    MKDIR := mkdir
-    RM := del /f /q
-    RMDIR := rmdir /s /q
+    ECHO := echo(
+    LINE := echo(
+    LS := 2>nul dir /b
+    MKDIR := 2>nul mkdir
+    RM := 2>nul del /f /q
+    RMDIR := 2>nul rmdir /s /q
     SOURCE :=
 endif
 ifeq "$(SHELL_TYPE)" "POWERSHELL"

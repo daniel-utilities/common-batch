@@ -68,8 +68,8 @@ and a remote for each parent template:
 ```
 5. Install the repo's .gitconfig file and make scripts executable:
 ```
-    git config --local include.path ../.gitconfig
-    chmod --recursive --verbose +x "./.mgmt"
+    git config --local include.path ../.project/git/.gitconfig
+    chmod --recursive --verbose +x ".project"
 ```
 
 
@@ -113,14 +113,20 @@ All projects will contain the following files (at minimum):
 ├── settings.linux.json       Settings applied when developing on Linux.
 └── settings.windows.json     Settings applied when developing on Windows.
 
-.mgmt/                      Management resources
-└── git/hooks/                Bash scripts triggered by various Git commands.
-    └── pre-commit              Runs before every commit (but not merge commits).
+.project/                      Development config and management scripts
+└── git/
+    ├── hooks/                  Shell scripts triggered by various Git commands.
+    |   └── pre-commit            Blocks commits to specific branches (but not merges)
+    ├── .gitconfig              Project-wide Git settings
+    ├── init.bat
+    ├── init.sh
+    |
+    make/
+        └── system_map.mak        Defines platform-independent operations for Make
 
 src/                        Project source code.
 
 .gitattributes              Git settings for specific filetypes.
-.gitconfig                  Git settings for whole project.
 .gitignore                  File types and paths to exclude from repository.
 LICENSE.txt                 Licensing terms.
 project.code-workspace      VSCode settings applied to the whole workspace.
@@ -163,7 +169,7 @@ tests/                      Unit testing scripts.
 
 ### Committing changes to the project:
 1. Only commit changes to `dev` branch; **never** commit directly to `main`!
-Commits (other than Merge commits) to `main` will be blocked by the pre-commit hook. See scripts/git/hooks/pre-commit for details.
+Commits (other than Merge commits) to `main` will be blocked by the pre-commit hook. See .project/git/hooks/pre-commit for details.
 ```
     git checkout dev
     ... change files ...
