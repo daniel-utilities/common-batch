@@ -4,7 +4,6 @@
         //  UPSTREAM: daniel-templates/template_project
         //----------------------------------------------------------------------
         "franmastromarino.vs-code-settings-os",
-        "ms-vscode.makefile-tools",
         "actboy168.tasks",
         "foxundermoon.shell-format",
         "timonwong.shellcheck",

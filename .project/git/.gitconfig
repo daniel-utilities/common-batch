@@ -17,6 +17,8 @@
 	#  UPSTREAM: daniel-templates/template_project
 	#---------------------------------------------------------------------------
 	hooksPath = .project/git/hooks
+	autocrlf = false
+	eol = lf
 
 	#---------------------------------------------------------------------------
 	#  UPSTREAM: (this project)

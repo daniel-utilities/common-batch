@@ -132,23 +132,29 @@
 		// Shell Definitions
 		//======================================================================
 		"terminal.integrated.profiles.linux": {
+
 			//------------------------------------------------------------------
 			//  UPSTREAM: daniel-templates/template_project
 			//------------------------------------------------------------------
+
 			"Bash": {
 				"path": "bash",
 				"args": [],
 				"overrideName": true,
 				"icon": "terminal-bash"
 			},
+
 		},
 
 		"terminal.integrated.profiles.windows": {
+
 			//------------------------------------------------------------------
 			//  UPSTREAM: daniel-templates/template_project
 			//------------------------------------------------------------------
+
 			"Command Prompt": {
 				"path": [
+					"cmd.exe",
 					"${env:windir}\\Sysnative\\cmd.exe",
 					"${env:windir}\\System32\\cmd.exe"
 				],
@@ -158,22 +164,33 @@
 			},
 			"PowerShell": {
 				"source": "PowerShell",
-				"args": [],
+				"args": [ "-NoProfile" ],
 				"overrideName": true,
 				"icon": "terminal-powershell",
 			},
 			"Git Bash": {
-				"source": "Git Bash",
-				"args": [],
+				"path": [
+					"${userHome}\\.local\\bin\\git\\bin\\bash.exe",
+                	"${env:localappdata}\\Programs\\Git\\bin\\bash.exe",
+					"${env:allusersprofile}\\.local\\bin\\git\\bin\\bash.exe",
+					"${env:programfiles}\\Git\\bin\\bash.exe",
+					"${env:programfiles(x86)}\\Git\\bin\\bash.exe",
+				],
+				"args": ["-i", "-l"],
 				"overrideName": true,
 				"icon": "terminal-bash"
 			},
 			"WSL2 (Default Distro)": {
-				"path": "C:\\Windows\\System32\\wsl.exe",
-				"args": [],
+				"path": [
+					"wsl.exe",
+					"${env:localappdata}\\Microsoft\\WindowsApps\\wsl.exe",
+					"${env:windir}\\System32\\wsl.exe"
+				],
+				//"args": [ "-d DistributionName" ],
 				"overrideName": true,
 				"icon": "terminal-bash"
 			},
+
 		},
 
 		//======================================================================
@@ -185,8 +202,8 @@
 		//----------------------------------------------------------------------
 
 		// Start terminals in the workspace directory
-		"terminal.integrated.cwd": "${fileWorkspaceFolder}",
-		"powershell.cwd": "${fileWorkspaceFolder}",
+		"terminal.integrated.cwd": "${workspaceFolder}",
+		"powershell.cwd": "${workspaceFolder}",
 
 		//----------------------------------------------------------------------
 		//  UPSTREAM: (this project)
