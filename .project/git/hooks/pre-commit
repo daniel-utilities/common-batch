@@ -11,12 +11,12 @@
 #
 # Installation:
 #   Run from root of the repository:
-#     git config --local core.hooksPath .mgmt/git/hooks
-#     chmod +x .mgmt/git/hooks/*
+#     git config --local core.hooksPath .project/git/hooks
+#     chmod +x .project/git/hooks/*
 #
-#   Or, add to .mgmt/git/.gitconfig:
+#   Or, add to .project/git/.gitconfig:
 #     [core]
-#       hooksPath = .mgmt/git/hooks
+#       hooksPath = .project/git/hooks
 #
 #===============================================================================
 

@@ -1,6 +1,10 @@
 {
     "version": "2.0.0",
-    // OPTIONAL: Add task configurations.
+
+    //==========================================================================
+    // Task Definitions
+    //==========================================================================
+    //
     // Press F1 to open command menu and run "Tasks: Configure Task".
     // Reference: https://code.visualstudio.com/docs/editor/tasks
     //
@@ -11,11 +15,21 @@
     //         ...
     //     }
     // ]
+    //
+
     "tasks": [
+        //----------------------------------------------------------------------
+        //  UPSTREAM: daniel-templates/template_project
+        //----------------------------------------------------------------------
         {
             "label": "Refresh Settings (.vscode/settings.json)",
             "command": "${command:vs-code-settings-os.updateSettings}",
             "problemMatcher": []
-        }
+        },
+
+        //----------------------------------------------------------------------
+        //  UPSTREAM: (this project)
+        //----------------------------------------------------------------------
+
     ]
 }

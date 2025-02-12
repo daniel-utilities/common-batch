@@ -1,6 +1,8 @@
 #===============================================================================
 # .gitattributes
 #
+# Git settings for specific file types
+#
 # Documentation:
 #   https://git-scm.com/docs/gitattributes
 #
@@ -11,8 +13,8 @@
 #  UPSTREAM: daniel-templates/template_project
 #-------------------------------------------------------------------------------
 
-# Force Unix-style line endings (\n) for all text files except certain
-#   Windows-specific filetypes (\r\n)
+# Force Unix-style line endings (\n) for all text files except certain Windows-specific filetypes (\r\n)
+# Also add to .vscode/settings.all.json to enforce correct line endings during development.
 * text=auto eol=lf
 *.{bat,[bB][aA][tT]} text eol=crlf
 *.{cmd,[cC][mM][dD]} text eol=crlf

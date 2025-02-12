@@ -1,11 +1,19 @@
 {
     "recommendations": [
-        // #### SECTION: TEMPLATE_PROJECT   ####
+        //----------------------------------------------------------------------
+        //  UPSTREAM: daniel-templates/template_project
+        //----------------------------------------------------------------------
         "franmastromarino.vs-code-settings-os",
-        "ms-vscode-remote.vscode-remote-extensionpack",
+        "ms-vscode.makefile-tools",
         "actboy168.tasks",
         "foxundermoon.shell-format",
         "timonwong.shellcheck",
-        // ####
+        "tomoki1207.pdf",
+
+        //----------------------------------------------------------------------
+        //  UPSTREAM: (this project)
+        //----------------------------------------------------------------------
+
+
     ]
 }
