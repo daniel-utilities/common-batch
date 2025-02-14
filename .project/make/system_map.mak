@@ -1,5 +1,4 @@
 #===============================================================================
-#===============================================================================
 # system_map.mak
 #
 # Defines mappings between common shell commands and their platform-specific
@@ -15,9 +14,9 @@
 #
 #     files := $(shell $(LS) "*.c")
 #
-#   Create a platform-independent file path:
+#   Create a platform-independent relative file path:
 #
-#     VAR := $(subst /,$(FILESEP),./path/to/a/file)
+#     paths := $(subst /,$(FILESEP),./path/to/a/file)
 #
 #===============================================================================
 
@@ -53,7 +52,7 @@ ifeq "$(SHLVL)" ""
     # Apply Windows shell preference
     SHELL := $(WINDOWS_SHELL_PREFERENCE)
 
-    # Detect shell type
+    # Detect Windows shell type
 ifeq "$(findstring powershell, $(SHELL))" "powershell"
     SHELL_TYPE := POWERSHELL
 else
@@ -73,7 +72,7 @@ else
     # Apply UNIX shell preference
     SHELL := $(UNIX_SHELL_PREFERENCE)
 
-    # Detect shell type
+    # Detect UNIX shell type
 ifeq "$(findstring pwsh, $(SHELL))" "pwsh"
     SHELL_TYPE := POWERSHELL
 else
@@ -92,65 +91,86 @@ endif
 
 
 #### MAP OS PROPERTIES
+# Apply when expanding environment variables in Make or interacting directly with the OS
 
 BACKSLASH := \$(strip)
 
-ifeq "$(OS_TYPE)" "UNIX"
-    SCRIPT_EXT := .sh
-    EXEC_EXT :=
-    FILESEP := /
-    PATHSEP := :
-endif
 ifeq "$(OS_TYPE)" "WINDOWS"
-    SCRIPT_EXT := .bat
+    OS_FILESEP := $(BACKSLASH)
+    OS_PATHSEP := ;
     EXEC_EXT := .exe
+endif
+ifeq "$(OS_TYPE)" "UNIX"
+    OS_FILESEP := /
+    OS_PATHSEP := :
+    EXEC_EXT :=
+endif
+
+
+#### MAP SHELL PROPERTIES
+# Apply when running shell commands or shell scripts from Make
+
+ifeq "$(SHELL_TYPE)" "CMD"
+    .SHELLFLAGS := /c
     FILESEP := $(BACKSLASH)
     PATHSEP := ;
+    SCRIPT_EXT := .bat
+endif
+ifeq "$(SHELL_TYPE)" "POWERSHELL"
+    .SHELLFLAGS := -NoProfile -Command
+    FILESEP := $(BACKSLASH)
+    PATHSEP := ;
+    SCRIPT_EXT := .ps1
+endif
+ifeq "$(SHELL_TYPE)" "POSIX"
+    .SHELLFLAGS := -c
+    FILESEP := /
+    PATHSEP := :
+    SCRIPT_EXT := .sh
 endif
 
 
 #### MAP SHELL COMMANDS
+# Use with the above shell properties
+# Most commands take a "quoted/path" as argument.
+# Example:
+#
+#   $(MKDIR) $(subst /,$(FILESEP),./path/to/a/dir)
+#
 
 ifeq "$(SHELL_TYPE)" "CMD"
-    .SHELLFLAGS := /c
     CMDSEP := &
-    NOP := 2>nul call :nolabel
-    CHMOD := $(NOP)
     ECHO := echo(
+    NOP := 1>nul echo(
+    CHMOD := $(NOP)
     LINE := echo(
-    LS := 2>nul dir /b
-    MKDIR := 2>nul mkdir
+    LS := dir /b
+    MKDIR := mkdir
     RM := 2>nul del /f /q
     RMDIR := 2>nul rmdir /s /q
-    SOURCE :=
 endif
 ifeq "$(SHELL_TYPE)" "POWERSHELL"
-    .SHELLFLAGS := -NoProfile -Command
     CMDSEP := ;
+    ECHO := Write-Output
     NOP := ? .
     CHMOD := $(NOP)
-    ECHO := Write-Output
     LINE := Write-Output ''
     LS := Get-ChildItem -Name
     MKDIR := New-Item -ItemType Directory -Force -Path
     RM := Remove-Item -Force -Path
     RMDIR := Remove-Item -Force -Recurse -Path
-    SOURCE :=
 endif
 ifeq "$(SHELL_TYPE)" "POSIX"
-    .SHELLFLAGS := -c
     CMDSEP := ;
+    ECHO := echo
     NOP := :
     CHMOD := chmod
-    ECHO := echo
     LINE := echo ""
     LS := ls -A -1 --color=no
     MKDIR := mkdir -p
     RM := rm -f
     RMDIR := rm -rf
-    SOURCE := source
 endif
-
 
 $(info OS_TYPE:     $(OS_TYPE))
 $(info SHELL_TYPE:  $(SHELL_TYPE))

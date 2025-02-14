@@ -6,6 +6,9 @@
 # Documentation:
 #   https://git-scm.com/docs/gitignore
 #
+# Sources:
+#   https://github.com/github/gitignore/
+#
 #===============================================================================
 
 
@@ -13,8 +16,12 @@
 #  UPSTREAM: daniel-templates/template_project
 #-------------------------------------------------------------------------------
 
+!.gitkeep
+
 # Auto-generated VS Code files
 .vscode/*
+.history/
+*.vsix
 
 # Folder settings file is generated automatically from extension: "franmastromarino.vs-code-settings-os"
 .vscode/settings.json
@@ -31,31 +38,44 @@
 !.vscode/launch.json
 
 # Log files
-*.log
 log/*
 logs/*
-!/log/.gitkeep
-!/logs/.gitkeep
-
-# Temporary files
-*.temp
-*.tmp
-temp/*
-tmp/*
-*.bak
-*.swp
-*~
+*.log
+#!/log/.gitkeep
+#!/logs/.gitkeep
 
 # Build files
 build/*
-!build/.gitkeep
+#!build/.gitkeep
+
+# Temporary files
+temp/*
+tmp/*
+*.temp
+*.tmp
+*.bak
+*.swp
+*~
+.nfs*
+.fuse_hidden*
+*.stackdump
 
 # Other filetypes
 .svn/*
 .hg/*
 .CVS/*
 .DS_Store/*
+$RECYCLE.BIN/*
+.Trash-*
+*.lnk
 Thumbs.db
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+.directory
+
 
 #-------------------------------------------------------------------------------
 #  UPSTREAM: (this project)
