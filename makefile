@@ -27,26 +27,17 @@ SOURCE_DIR  = src
 MAKE_DIR = .project/make
 MAKE_TARGETS_DIR = $(MAKE_DIR)/targets
 
-# GIT_CONFIG_FILE = .project/git/.gitconfig
-# GIT_HOOKS_DIR = .project/git/hooks
-
 #### IMPORTS
 include $(MAKE_DIR)/system_map.mak
 include $(MAKE_DIR)/config.mak
-include $(wildcard $(MAKE_TARGETS_DIR)/*.mak)
 
-
-#### TARGETS
-
+#### DEFAULT TARGET
 .PHONY: all
 all:
 	$(PRINT_TRACE)
 
+#### ADDITIONAL TARGETS
+include $(wildcard $(MAKE_TARGETS_DIR)/*.mak)
 
-#.PHONY: gitconfig
-#gitconfig:
-#ifneq "$(shell git config --local --get include.path)" "../$(GIT_CONFIG_FILE)"
-#	$(PRINT_TRACE)
-#	git config --local include.path ../$(GIT_CONFIG_FILE)
-#	@ $(CHMOD) --verbose u+x,g+x "$(subst /,$(FILESEP),$(GIT_HOOKS_DIR)/*)"
-#endif
+
+

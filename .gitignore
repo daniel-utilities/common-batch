@@ -40,7 +40,7 @@ log/*
 logs/*
 *.log
 #!/log/.gitkeep
-!/logs/.gitkeep
+#!/logs/.gitkeep
 
 # Build files
 build/*

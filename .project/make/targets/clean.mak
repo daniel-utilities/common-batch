@@ -39,7 +39,7 @@ clean: | clean_git_rm_cached
 .PHONY: clean_git_rm_cached
 clean_git_rm_cached:
 	$(PRINT_TRACE)
-	git rm --cached .
+	git rm -r --cached .
 	git add *
 
 
@@ -55,8 +55,10 @@ TMP_DIRS ?=
 # Definition
 .PHONY: clean_remove_tmp_directories
 clean_remove_tmp_directories:
+ifneq "$(TMP_DIRS)" ""
 	$(PRINT_TRACE)
 	$(foreach dir,$(TMP_DIRS),$(value RMDIR) "$(subst /,$(FILESEP),$(dir))" $(CMDSEP)) $(value NOP)
+endif
 
 
 #-------------------------------------------------------------------------------
