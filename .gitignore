@@ -16,8 +16,6 @@
 #  UPSTREAM: daniel-templates/template_project
 #-------------------------------------------------------------------------------
 
-!.gitkeep
-
 # Auto-generated VS Code files
 .vscode/*
 .history/
@@ -42,7 +40,7 @@ log/*
 logs/*
 *.log
 #!/log/.gitkeep
-#!/logs/.gitkeep
+!/logs/.gitkeep
 
 # Build files
 build/*

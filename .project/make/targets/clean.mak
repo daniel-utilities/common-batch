@@ -28,6 +28,22 @@ clean:
 #-------------------------------------------------------------------------------
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# TARGET: clean_git_rm_cached
+#   Remove from the repository all files in the repo's .gitignore
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+clean: | clean_git_rm_cached
+
+# Config
+
+# Definition
+.PHONY: clean_git_rm_cached
+clean_git_rm_cached:
+	$(PRINT_TRACE)
+	git rm --cached .
+	git add *
+
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # TARGET: clean_remove_tmp_directories
 #   Deletes temporary directories and their contents
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -41,6 +57,7 @@ TMP_DIRS ?=
 clean_remove_tmp_directories:
 	$(PRINT_TRACE)
 	$(foreach dir,$(TMP_DIRS),$(value RMDIR) "$(subst /,$(FILESEP),$(dir))" $(CMDSEP)) $(value NOP)
+
 
 #-------------------------------------------------------------------------------
 # UPSTREAM: (this project)
