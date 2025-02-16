@@ -1,5 +1,5 @@
 #===============================================================================
-# system_map.mak
+# platform.mak
 #
 # Defines mappings between common shell commands and their platform-specific
 # variations.
@@ -8,7 +8,7 @@
 #
 #   Include in makefile:
 #
-#     include .project/make/system_map.mak
+#     include .project/make/platform.mak
 #
 #   Run a platform-independent shell command:
 #
@@ -99,11 +99,15 @@ ifeq "$(OS_TYPE)" "WINDOWS"
     OS_FILESEP := $(BACKSLASH)
     OS_PATHSEP := ;
     EXEC_EXT := .exe
+    LIB_EXT := .lib
+    DLL_EXT := .dll
 endif
 ifeq "$(OS_TYPE)" "UNIX"
     OS_FILESEP := /
     OS_PATHSEP := :
     EXEC_EXT :=
+    LIB_EXT := .a
+    DLL_EXT := .so
 endif
 
 
@@ -140,37 +144,52 @@ endif
 
 ifeq "$(SHELL_TYPE)" "CMD"
     CMDSEP := &
-    ECHO := echo(
-    NOP := 1>nul echo(
-    CHMOD := $(NOP)
-    LINE := echo(
-    LS := dir /b
-    MKDIR := mkdir
-    RM := 2>nul del /f /q
-    RMDIR := 2>nul rmdir /s /q
+    SILENT := 1>nul
+    TRUE = (call )
+    FALSE = (call)
+    ECHO = echo($(1)
+    NOP = 1>nul echo(
+    CHMOD = $(NOP)
+    LINE = echo(
+    LS = dir /b "$(1)"
+    MKDIR = if not exist "$(1)\" ( mkdir "$(1)" )
+    RM = if exist "$(1)" ( del /f /q "$(1)" )
+    RMDIR = if exist "$(1)\" ( rmdir /s /q "$(1)" )
 endif
 ifeq "$(SHELL_TYPE)" "POWERSHELL"
     CMDSEP := ;
-    ECHO := Write-Output
-    NOP := ? .
-    CHMOD := $(NOP)
-    LINE := Write-Output ''
-    LS := Get-ChildItem -Name
-    MKDIR := New-Item -ItemType Directory -Force -Path
-    RM := Remove-Item -Force -Path
-    RMDIR := Remove-Item -Force -Recurse -Path
+    SILENT :=
+    TRUE =
+    FALSE =
+    ECHO = Write-Output '$(1)'
+    NOP = ? .
+    CHMOD = $(NOP)
+    LINE = Write-Output ''
+    LS = Get-ChildItem -Name '$(1)'
+    MKDIR = New-Item -ItemType Directory -Force -Path '$(1)'
+    RM = Remove-Item -Force -Path '$(1)'
+    RMDIR = Remove-Item -Force -Recurse -Path '$(1)'
 endif
 ifeq "$(SHELL_TYPE)" "POSIX"
     CMDSEP := ;
-    ECHO := echo
-    NOP := :
-    CHMOD := chmod
-    LINE := echo ""
-    LS := ls -A -1 --color=no
-    MKDIR := mkdir -p
-    RM := rm -f
-    RMDIR := rm -rf
+    SILENT := > /dev/null
+    TRUE = true
+    FALSE = false
+    ECHO = echo "$(1)"
+    NOP = :
+    CHMOD = chmod "$(1)"
+    LINE = echo ""
+    LS = ls -A -1 --color=no "$(1)"
+    MKDIR = mkdir -p "$(1)"
+    RM = rm -f "$(1)"
+    RMDIR = rm -rf "$(1)"
 endif
+
+
+
+
+
+
 
 $(info OS_TYPE:     $(OS_TYPE))
 $(info SHELL_TYPE:  $(SHELL_TYPE))

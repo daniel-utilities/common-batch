@@ -39,26 +39,25 @@ clean: | clean_git_rm_cached
 .PHONY: clean_git_rm_cached
 clean_git_rm_cached:
 	$(PRINT_TRACE)
-	git rm -r --cached .
+	git rm -rf --cached . $(SILENT)
 	git add *
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# TARGET: clean_remove_tmp_directories
-#   Deletes temporary directories and their contents
+# TARGET: clean_remove_directories
+#   Deletes one or more directories and their contents
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-clean: | clean_remove_tmp_directories
+clean: | clean_remove_directories
 
 # Config
-TMP_DIRS ?=
+REMOVE_DIRS ?=
 
 # Definition
-.PHONY: clean_remove_tmp_directories
-clean_remove_tmp_directories:
-ifneq "$(TMP_DIRS)" ""
+.PHONY: clean_remove_directories
+.ONESHELL: clean_remove_directories
+clean_remove_directories:
 	$(PRINT_TRACE)
-	$(foreach dir,$(TMP_DIRS),$(value RMDIR) "$(subst /,$(FILESEP),$(dir))" $(CMDSEP)) $(value NOP)
-endif
+	$(foreach dir,$(REMOVE_DIRS),$(call RMDIR,$(subst /,$(FILESEP),$(dir))) $(LF))
 
 
 #-------------------------------------------------------------------------------

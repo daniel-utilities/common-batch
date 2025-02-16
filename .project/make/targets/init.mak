@@ -48,22 +48,22 @@ endif
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# TARGET: init_create_tmp_directories
+# TARGET: init_create_directories
 #   Ensures various temporary directories exist
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-init: | init_create_tmp_directories
+init: | init_create_directories
 
 # Config
-TMP_DIRS ?=
+CREATE_DIRS ?=
 
 # Definition
-.PHONY: init_create_tmp_directories
-init_create_tmp_directories: $(TMP_DIRS)
+.PHONY: init_create_directories
+init_create_directories: | $(CREATE_DIRS)
 
-# Dynamically create a target for each path in TMP_DIRS
-$(TMP_DIRS):
-	$(eval $(subst $$@,init_create_tmp_directories:$$@,$(value PRINT_TRACE)))
-	$(MKDIR) "$(subst /,$(FILESEP),$@)"
+# Dynamically create a target for each path in CREATE_DIRS
+#$(eval $(subst $$@,init_create_directories:$$@,$(value PRINT_TRACE)))
+$(CREATE_DIRS):
+	$(call MKDIR,$(subst /,$(FILESEP),$@))
 
 
 #-------------------------------------------------------------------------------
