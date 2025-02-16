@@ -1,43 +1,26 @@
 #===============================================================================
 # makefile
+#
+# Minimal makefile which can be extended and specialized on a per-project basis
+# by adding additional makefiles to the MAKE_DIR
 #===============================================================================
 
-
-#### DEBUGGING
-ifneq "$(SHOWTARGETS)" "false"
-    define PRINT_TRACE
-        $(info )
-        $(info ======= Target:  $@  =======)
-    endef
-else
-    PRINT_TRACE = $(info )
-endif
-
-# If VERBOSE, show each command as its being run
-ifneq ($(VERBOSE), true)
-    V := @
-endif
-
-
-#### PROJECT PATHS
-# Specify paths using '/', and subst $(FILESEP).
-# Use delayed expansion '=' so FILESEP can be corrected later.
-#   VAR = $(subst /,$(FILESEP),./path/to/a/file)
-SOURCE_DIR  = src
+# Import paths
 MAKE_DIR = .project/make
 MAKE_TARGETS_DIR = $(MAKE_DIR)/targets
 
-#### IMPORTS
-include $(MAKE_DIR)/system_map.mak
+# Basic functions
+include $(MAKE_DIR)/functions.mak
+
+# Platform-specific definitions
+include $(MAKE_DIR)/platform.mak
+
+# Project-specific configuration
 include $(MAKE_DIR)/config.mak
 
-#### DEFAULT TARGET
-.PHONY: all
-all:
-	$(PRINT_TRACE)
+# Set default target
+DEFAULT_TARGET ?= all
+$(DEFAULT_TARGET):
 
-#### ADDITIONAL TARGETS
+# Import additional targets
 include $(wildcard $(MAKE_TARGETS_DIR)/*.mak)
-
-
-
