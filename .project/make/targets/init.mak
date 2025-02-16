@@ -43,7 +43,7 @@ init_gitconfig:
 ifneq "$(shell git config --local --get include.path)" "../$(GIT_CONFIG_FILE)"
 	$(PRINT_TRACE)
 	git config --local include.path ../$(GIT_CONFIG_FILE)
-	@ $(CHMOD) --verbose u+x,g+x "$(subst /,$(FILESEP),$(GIT_HOOKS_DIR)/*)"
+	$(call chmod,--verbose u+x,$(GIT_HOOKS_DIR)/*)
 endif
 
 
@@ -63,7 +63,7 @@ init_create_directories: | $(CREATE_DIRS)
 # Dynamically create a target for each path in CREATE_DIRS
 #$(eval $(subst $$@,init_create_directories:$$@,$(value PRINT_TRACE)))
 $(CREATE_DIRS):
-	$(call MKDIR,$(subst /,$(FILESEP),$@))
+	$(call mkdir,$@)
 
 
 #-------------------------------------------------------------------------------

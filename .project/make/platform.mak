@@ -145,44 +145,44 @@ endif
 ifeq "$(SHELL_TYPE)" "CMD"
     CMDSEP := &
     SILENT := 1>nul
-    TRUE = (call )
-    FALSE = (call)
-    ECHO = echo($(1)
-    NOP = 1>nul echo(
-    CHMOD = $(NOP)
-    LINE = echo(
-    LS = dir /b "$(1)"
-    MKDIR = if not exist "$(1)\" ( mkdir "$(1)" )
-    RM = if exist "$(1)" ( del /f /q "$(1)" )
-    RMDIR = if exist "$(1)\" ( rmdir /s /q "$(1)" )
+    true = (call )
+    false = (call)
+    echo = echo($(call mkpath,$(1))
+    nop = 1>nul echo(
+    chmod = $(NOP)
+    line = echo(
+    ls = dir /b "$(call mkpath,$(1))"
+    mkdir = if not exist "$(call mkpath,$(1))\" ( mkdir "$(call mkpath,$(1))" )
+    rm = if exist "$(call mkpath,$(1))" ( del /f /q "$(call mkpath,$(1))" )
+    rmdir = if exist "$(call mkpath,$(1))\" ( rmdir /s /q "$(call mkpath,$(1))" )
 endif
 ifeq "$(SHELL_TYPE)" "POWERSHELL"
     CMDSEP := ;
     SILENT :=
-    TRUE =
-    FALSE =
-    ECHO = Write-Output '$(1)'
-    NOP = ? .
-    CHMOD = $(NOP)
-    LINE = Write-Output ''
-    LS = Get-ChildItem -Name '$(1)'
-    MKDIR = New-Item -ItemType Directory -Force -Path '$(1)'
-    RM = Remove-Item -Force -Path '$(1)'
-    RMDIR = Remove-Item -Force -Recurse -Path '$(1)'
+    true =
+    false =
+    echo = Write-Output '$(call mkpath,$(1))'
+    nop = ? .
+    chmod = $(NOP)
+    line = Write-Output ''
+    ls = Get-ChildItem -Name '$(call mkpath,$(1))'
+    mkdir = New-Item -ItemType Directory -Force -Path '$(call mkpath,$(1))'
+    rm = Remove-Item -Force -Path '$(call mkpath,$(1))'
+    rmdir = Remove-Item -Force -Recurse -Path '$(call mkpath,$(1))'
 endif
 ifeq "$(SHELL_TYPE)" "POSIX"
     CMDSEP := ;
     SILENT := > /dev/null
-    TRUE = true
-    FALSE = false
-    ECHO = echo "$(1)"
-    NOP = :
-    CHMOD = chmod "$(1)"
-    LINE = echo ""
-    LS = ls -A -1 --color=no "$(1)"
-    MKDIR = mkdir -p "$(1)"
-    RM = rm -f "$(1)"
-    RMDIR = rm -rf "$(1)"
+    true = true
+    false = false
+    echo = echo "$(call mkpath,$(1))"
+    nop = :
+    chmod = chmod $(1) "$(call mkpath,$(2))"
+    line = echo ""
+    ls = ls -A -1 --color=no "$(call mkpath,$(1))"
+    mkdir = mkdir -p "$(call mkpath,$(1))"
+    rm = rm -f "$(call mkpath,$(1))"
+    rmdir = rm -rf "$(call mkpath,$(1))"
 endif
 
 

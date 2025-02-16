@@ -57,7 +57,7 @@ REMOVE_DIRS ?=
 .ONESHELL: clean_remove_directories
 clean_remove_directories:
 	$(PRINT_TRACE)
-	$(foreach dir,$(REMOVE_DIRS),$(call RMDIR,$(subst /,$(FILESEP),$(dir))) $(LF))
+	$(foreach dir,$(REMOVE_DIRS),$(call rmdir,$(dir)) $(LF))
 
 
 #-------------------------------------------------------------------------------
