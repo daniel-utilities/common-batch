@@ -147,14 +147,16 @@ ifeq "$(SHELL_TYPE)" "CMD"
     SILENT := 1>nul
     true = (call )
     false = (call)
-    echo = echo($(call mkpath,$(1))
-    nop = 1>nul echo(
+    echo = (echo($(call mkpath,$(1)))
+    nop = (echo(1>nul)
     chmod = $(NOP)
-    line = echo(
-    ls = dir /b "$(call mkpath,$(1))"
-    mkdir = if not exist "$(call mkpath,$(1))\" ( mkdir "$(call mkpath,$(1))" )
-    rm = if exist "$(call mkpath,$(1))" ( del /f /q "$(call mkpath,$(1))" )
-    rmdir = if exist "$(call mkpath,$(1))\" ( rmdir /s /q "$(call mkpath,$(1))" )
+    line = (echo()
+    ls = (dir /b "$(call mkpath,$(1))")
+    mkdir = (if not exist "$(call mkpath,$(1))\" ( mkdir "$(call mkpath,$(1))" ))
+    rm = (if exist "$(call mkpath,$(1))" ( del /f /q "$(call mkpath,$(1))" ))
+    rmdir = (if exist "$(call mkpath,$(1))\" ( rmdir /s /q "$(call mkpath,$(1))" ))
+    copy = (xcopy /Y /I /-I "$(call mkpath,$(1))" "$(call mkpath,$(2))")
+    copydir = (xcopy /Y /I /E "$(call mkpath,$(1))" "$(call mkpath,$(2))")
 endif
 ifeq "$(SHELL_TYPE)" "POWERSHELL"
     CMDSEP := ;
@@ -169,6 +171,8 @@ ifeq "$(SHELL_TYPE)" "POWERSHELL"
     mkdir = New-Item -ItemType Directory -Force -Path '$(call mkpath,$(1))'
     rm = Remove-Item -Force -Path '$(call mkpath,$(1))'
     rmdir = Remove-Item -Force -Recurse -Path '$(call mkpath,$(1))'
+    copy =
+    copydir =
 endif
 ifeq "$(SHELL_TYPE)" "POSIX"
     CMDSEP := ;
@@ -183,6 +187,8 @@ ifeq "$(SHELL_TYPE)" "POSIX"
     mkdir = mkdir -p "$(call mkpath,$(1))"
     rm = rm -f "$(call mkpath,$(1))"
     rmdir = rm -rf "$(call mkpath,$(1))"
+    copy = cp -f "$(call mkpath,$(1))" "$(call mkpath,$(2))"
+    copydir = cp -rf "$(call mkpath,$(1))/." "$(call mkpath,$(2))"
 endif
 
 

@@ -51,19 +51,21 @@ endif
 # TARGET: init_create_directories
 #   Ensures various temporary directories exist
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-init: | init_create_directories
+init: | $(CREATE_DIRS)
 
 # Config
 CREATE_DIRS ?=
 
 # Definition
 .PHONY: init_create_directories
-init_create_directories: | $(CREATE_DIRS)
+init_create_directories:
+	$(PRINT_TRACE)
 
 # Dynamically create a target for each path in CREATE_DIRS
-#$(eval $(subst $$@,init_create_directories:$$@,$(value PRINT_TRACE)))
-$(CREATE_DIRS):
+# Set init_create_directories as a prereq so PRINT_TRACE is run once before this group
+$(CREATE_DIRS): | init_create_directories
 	$(call mkdir,$@)
+
 
 
 #-------------------------------------------------------------------------------
