@@ -8,15 +8,16 @@
 #
 #   Include in makefile:
 #
+#     include .project/make/functions.mak
 #     include .project/make/platform.mak
 #
-#   Run a platform-independent shell command:
+#   Run a platform-independent shell command in a target definition block:
 #
-#     files := $(shell $(LS) "*.c")
+#     $(call mkdir,path/to/dir)
 #
-#   Create a platform-independent relative file path:
+#   Run a shell command and store the output in a variable:
 #
-#     paths := $(subst /,$(FILESEP),./path/to/a/file)
+#     files := $(shell $(call ls,*.c))
 #
 #===============================================================================
 
@@ -135,11 +136,11 @@ endif
 
 
 #### MAP SHELL COMMANDS
-# Use with the above shell properties
-# Most commands take a "quoted/path" as argument.
-# Example:
+# Use with "call" function.
+# Examples:
 #
-#   $(MKDIR) $(subst /,$(FILESEP),./path/to/a/dir)
+#   $(call mkdir,./path/to/a/dir)
+#   $(call copy,source/file.txt,dest)
 #
 
 ifeq "$(SHELL_TYPE)" "CMD"
