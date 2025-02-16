@@ -41,6 +41,7 @@ endif
 PATHSEP ?= :
 pathsearch = $(firstword $(wildcard $(addsuffix /$(1),$(subst $(PATHSEP), ,$(PATH)))))
 
+
 # newlist = $(call map,function,list)
 # Applies the function to each element of the (space-separated) list
 #
@@ -48,10 +49,12 @@ pathsearch = $(firstword $(wildcard $(addsuffix /$(1),$(subst $(PATHSEP), ,$(PAT
 #
 map = $(foreach a,$(2),$(call $(1),$(a)))
 
+
 # str = $(call concat sep,list)
 # Concatentates a list of strings with the given separator.
 #
 concat = $(subst ?,,$(subst ? ,$(1),$(foreach a,$(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9),$(a)?)))
+
 
 # mkpath = $(call mkpath,list)
 # Concatenates a list of path segments into a single path.

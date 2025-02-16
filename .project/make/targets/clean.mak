@@ -39,8 +39,8 @@ clean: | clean_git_rm_cached
 .PHONY: clean_git_rm_cached
 clean_git_rm_cached:
 	$(PRINT_TRACE)
-	git rm -rf --cached . $(SILENT)
-	git add *
+	git rm -rf --cached --quiet .
+	git add --all
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
