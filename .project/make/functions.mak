@@ -19,18 +19,11 @@ endef
 
 #### DEBUGGING
 ifneq "$(SHOWTARGETS)" "false"
-    define PRINT_TRACE
-        $(info )
-        $(info ======= Target:  $@  =======)
-    endef
+    PRINT_TRACE = $(info $(LF)======= Target:  $@  =======)
 else
     PRINT_TRACE :=
 endif
 
-# If VERBOSE, show each command as its being run
-ifneq ($(VERBOSE), true)
-    V := @
-endif
 
 
 # filepath = $(call pathsearch,filename)

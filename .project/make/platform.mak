@@ -94,7 +94,7 @@ endif
 #### MAP OS PROPERTIES
 # Apply when expanding environment variables in Make or interacting directly with the OS
 
-BACKSLASH := \$(strip)
+BACKSLASH ?= \$(strip)
 
 ifeq "$(OS_TYPE)" "WINDOWS"
     OS_FILESEP := $(BACKSLASH)

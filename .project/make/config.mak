@@ -28,5 +28,3 @@ REMOVE_DIRS = $(CREATE_DIRS)
 #-------------------------------------------------------------------------------
 # Overrides for this project
 
-CREATE_DIRS = tmp1/asdf1 tmp2/asdf2 tmp3/asdf3
-REMOVE_DIRS = tmp1 tmp2 tmp3

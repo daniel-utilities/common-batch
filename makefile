@@ -18,6 +18,9 @@ include $(MAKE_DIR)/platform.mak
 # Project-specific configuration
 include $(MAKE_DIR)/config.mak
 
+# Machine-specific configuration
+include $(MAKE_DIR)/config.local.mak
+
 # Set default target
 DEFAULT_TARGET ?= all
 $(DEFAULT_TARGET):
