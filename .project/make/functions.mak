@@ -8,8 +8,9 @@
 
 # Special Characters
 EMPTY :=
-SPACE :=
+SPACE := $(EMPTY) $(EMPTY)
 BACKSLASH := \$(strip)
+INDENT := $(SPACE)$(SPACE)
 
 define LF
 
@@ -23,6 +24,19 @@ ifneq "$(SHOWTARGETS)" "false"
 else
     PRINT_TRACE :=
 endif
+
+
+# $(eval $(call set_helptext,target,text))
+# Defines a target "help_{target}" which prints a description of {target}.
+# It will be automatically invoked with the command "make help".
+#
+define set_helptext
+help: | help_$(strip $(1))
+.PHONY: help_$(strip $(1))
+help_$(strip $(1)): | help_header
+	$$(info $$(INDENT)$(strip $(1)))
+	$$(info $$(INDENT)$$(INDENT)$(strip $(2)))
+endef
 
 
 
