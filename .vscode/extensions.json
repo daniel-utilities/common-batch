@@ -1,7 +1,7 @@
 {
     "recommendations": [
         //----------------------------------------------------------------------
-        //  UPSTREAM: daniel-templates/template_project
+        //  UPSTREAM: daniel-templates/template-project
         //----------------------------------------------------------------------
         "franmastromarino.vs-code-settings-os",
         "actboy168.tasks",

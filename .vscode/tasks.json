@@ -19,7 +19,7 @@
 
     "tasks": [
         //----------------------------------------------------------------------
-        //  UPSTREAM: daniel-templates/template_project
+        //  UPSTREAM: daniel-templates/template-project
         //----------------------------------------------------------------------
         {
             "label": "Refresh Settings (.vscode/settings.json)",

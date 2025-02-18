@@ -13,7 +13,7 @@
 
 
 #-------------------------------------------------------------------------------
-#  UPSTREAM: daniel-templates/template_project
+#  UPSTREAM: daniel-templates/template-project
 #-------------------------------------------------------------------------------
 
 # Files can be excluded by giving them the ".local" extension
@@ -90,7 +90,7 @@ ehthumbs_vista.db
 #===============================================================================
 
 #-------------------------------------------------------------------------------
-#  UPSTREAM: daniel-templates/template_project
+#  UPSTREAM: daniel-templates/template-project
 #-------------------------------------------------------------------------------
 
 # Place a ".gitkeep" inside a folder to make sure it is always tracked by Git.

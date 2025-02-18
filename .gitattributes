@@ -10,7 +10,7 @@
 
 
 #-------------------------------------------------------------------------------
-#  UPSTREAM: daniel-templates/template_project
+#  UPSTREAM: daniel-templates/template-project
 #-------------------------------------------------------------------------------
 
 # Force Unix-style line endings (\n) for all text files except certain Windows-specific filetypes (\r\n)
