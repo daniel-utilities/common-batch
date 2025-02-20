@@ -23,6 +23,11 @@
 all:
 	$(PRINT_TRACE)
 
+# Help text
+$(eval $(call set_helptext,all, \
+  Default target \
+))
+
 #-------------------------------------------------------------------------------
 # UPSTREAM: daniel-templates/template-project
 #-------------------------------------------------------------------------------

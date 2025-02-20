@@ -23,23 +23,28 @@
 init:
 	$(PRINT_TRACE)
 
+# Help text
+$(eval $(call set_helptext,init, \
+  Initializes this project's development environment \
+))
+
 #-------------------------------------------------------------------------------
 # UPSTREAM: daniel-templates/template-project
 #-------------------------------------------------------------------------------
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# TARGET: init_gitconfig
+# TARGET: init.git.gitconfig
 #   Configures Git include.path and makes all Git hooks executable
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-init: | init_gitconfig
+init: | init.git.gitconfig
 
 # Config
 GIT_CONFIG_FILE ?= .project/git/.gitconfig
 GIT_HOOKS_DIR ?= .project/git/hooks
 
 # Definition
-.PHONY: init_gitconfig
-init_gitconfig:
+.PHONY: init.git.gitconfig
+init.git.gitconfig:
 ifneq "$(shell git config --local --get include.path)" "../$(GIT_CONFIG_FILE)"
 	$(PRINT_TRACE)
 	git config --local include.path ../$(GIT_CONFIG_FILE)
@@ -48,22 +53,22 @@ endif
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# TARGET: init_create_directories
+# TARGET: init.create.dirs
 #   Ensures various temporary directories exist
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-init: | $(CREATE_DIRS)
+init.create.dirs: | $(CREATE_DIRS)
 
 # Config
 CREATE_DIRS ?=
 
 # Definition
-.PHONY: init_create_directories
-init_create_directories:
+.PHONY: init.create.dirs
+init.create.dirs:
 	$(PRINT_TRACE)
 
 # Dynamically create a target for each path in CREATE_DIRS
-# Set init_create_directories as a prereq so PRINT_TRACE is run once before this group
-$(CREATE_DIRS): | init_create_directories
+# Set init.create.dirs as a prereq so PRINT_TRACE is run once before this group
+$(CREATE_DIRS): | init.create.dirs
 	$(call mkdir,$@)
 
 

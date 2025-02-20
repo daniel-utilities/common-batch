@@ -23,41 +23,56 @@
 clean:
 	$(PRINT_TRACE)
 
+# Help text
+$(eval $(call set_helptext,clean, \
+  Resets this project's development environment \
+))
+
 #-------------------------------------------------------------------------------
 # UPSTREAM: daniel-templates/template-project
 #-------------------------------------------------------------------------------
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# TARGET: clean_git_rm_cached
-#   Remove from the repository all files in the repo's .gitignore
+# TARGET: clean.git.rm-cached
+#   Untrack all files in the repo's .gitignore
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-clean: | clean_git_rm_cached
+clean: | clean.git.rm-cached
 
 # Config
 
 # Definition
-.PHONY: clean_git_rm_cached
-clean_git_rm_cached:
+.PHONY: clean.git.rm-cached
+clean.git.rm-cached:
 	$(PRINT_TRACE)
 	git rm -rf --cached --quiet .
 	git add --all
 
+# Help text
+$(eval $(call set_helptext,clean.git.rm-cached, \
+  Untrack all files in the repo's .gitignore \
+))
+
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# TARGET: clean_remove_directories
-#   Deletes one or more directories and their contents
+# TARGET: clean.remove.dirs
+#   Deletes one or more directories
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-clean: | clean_remove_directories
+clean: | clean.remove.dirs
 
 # Config
 REMOVE_DIRS ?=
 
 # Definition
-.PHONY: clean_remove_directories
-.ONESHELL: clean_remove_directories
-clean_remove_directories:
+.PHONY: clean.remove.dirs
+.ONESHELL: clean.remove.dirs
+clean.remove.dirs:
 	$(PRINT_TRACE)
 	$(foreach dir,$(REMOVE_DIRS),$(call rmdir,$(dir)) $(LF))
+
+# Help text
+$(eval $(call set_helptext,clean.remove.dirs, \
+  Deletes one or more directories \
+))
 
 
 #-------------------------------------------------------------------------------
