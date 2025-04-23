@@ -6,15 +6,24 @@
 # Documentation:
 #   https://git-scm.com/docs/gitignore
 #
+# Sources:
+#   https://github.com/github/gitignore/
+#
 #===============================================================================
 
 
 #-------------------------------------------------------------------------------
-#  UPSTREAM: daniel-templates/template_project
+#  UPSTREAM: daniel-templates/template-project
 #-------------------------------------------------------------------------------
 
+# Files can be excluded by giving them the ".local" extension
+*.local
+*.local.*
+
 # Auto-generated VS Code files
-.vscode/*
+**/.vscode/*
+**/.history/*
+*.vsix
 
 # Folder settings file is generated automatically from extension: "franmastromarino.vs-code-settings-os"
 .vscode/settings.json
@@ -31,32 +40,66 @@
 !.vscode/launch.json
 
 # Log files
+**/log/*
+**/logs/*
 *.log
-log/*
-logs/*
-!/log/.gitkeep
-!/logs/.gitkeep
+
+# Build files
+**/build/*
 
 # Temporary files
+**/temp/*
+**/tmp/*
 *.temp
 *.tmp
-temp/*
-tmp/*
 *.bak
 *.swp
 *~
-
-# Build files
-build/*
-!build/.gitkeep
+.nfs*
+.fuse_hidden*
+*.stackdump
 
 # Other filetypes
-.svn/*
-.hg/*
-.CVS/*
-.DS_Store/*
+**/.svn/*
+**/.hg/*
+**/.CVS/*
+**/.DS_Store/*
+**/$RECYCLE.BIN/*
+.Trash-*
+*.lnk
 Thumbs.db
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+[Dd]esktop.ini
+.directory
+
 
 #-------------------------------------------------------------------------------
 #  UPSTREAM: (this project)
 #-------------------------------------------------------------------------------
+
+
+
+
+#===============================================================================
+# GLOBAL EXCEPTIONS
+# If a file is excluded via one of the previous rules, it can be added back
+# here at the end of the file by prefixing the rule with "!".
+#===============================================================================
+
+#-------------------------------------------------------------------------------
+#  UPSTREAM: daniel-templates/template-project
+#-------------------------------------------------------------------------------
+
+# Place a ".gitkeep" inside a folder to make sure it is always tracked by Git.
+!.gitkeep
+
+
+#-------------------------------------------------------------------------------
+#  UPSTREAM: (this project)
+#-------------------------------------------------------------------------------
+
+
+

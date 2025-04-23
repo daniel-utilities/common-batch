@@ -6,7 +6,7 @@
 	"folders": [
 
 		//----------------------------------------------------------------------
-		//  UPSTREAM: daniel-templates/template_project
+		//  UPSTREAM: daniel-templates/template-project
 		//----------------------------------------------------------------------
 
 		// Project folder:
@@ -44,7 +44,7 @@
 		"files.readonlyInclude": {
 
 			//------------------------------------------------------------------
-			//  UPSTREAM: daniel-templates/template_project
+			//  UPSTREAM: daniel-templates/template-project
 			//------------------------------------------------------------------
 
 			// Git Management (can break Git if modified inadvertently)
@@ -78,7 +78,7 @@
 		"search.exclude": {
 
 			//------------------------------------------------------------------
-			//  UPSTREAM: daniel-templates/template_project
+			//  UPSTREAM: daniel-templates/template-project
 			//------------------------------------------------------------------
 
 			// Git Management
@@ -112,7 +112,7 @@
 		"files.watcherExclude": {
 
 			//------------------------------------------------------------------
-			//  UPSTREAM: daniel-templates/template_project
+			//  UPSTREAM: daniel-templates/template-project
 			//------------------------------------------------------------------
 
 			// Build output
@@ -134,7 +134,7 @@
 		"terminal.integrated.profiles.linux": {
 
 			//------------------------------------------------------------------
-			//  UPSTREAM: daniel-templates/template_project
+			//  UPSTREAM: daniel-templates/template-project
 			//------------------------------------------------------------------
 
 			"Bash": {
@@ -149,7 +149,7 @@
 		"terminal.integrated.profiles.windows": {
 
 			//------------------------------------------------------------------
-			//  UPSTREAM: daniel-templates/template_project
+			//  UPSTREAM: daniel-templates/template-project
 			//------------------------------------------------------------------
 
 			"Command Prompt": {
@@ -198,7 +198,7 @@
 		//======================================================================
 
 		//----------------------------------------------------------------------
-		//  UPSTREAM: daniel-templates/template_project
+		//  UPSTREAM: daniel-templates/template-project
 		//----------------------------------------------------------------------
 
 		// Start terminals in the workspace directory

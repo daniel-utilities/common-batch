@@ -14,7 +14,7 @@
 
 [core]
 	#---------------------------------------------------------------------------
-	#  UPSTREAM: daniel-templates/template_project
+	#  UPSTREAM: daniel-templates/template-project
 	#---------------------------------------------------------------------------
 	hooksPath = .project/git/hooks
 	autocrlf = false

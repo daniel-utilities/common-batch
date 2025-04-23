@@ -6,11 +6,11 @@
 * Uncheck "whole word" match
 * Do NOT edit the Reference Links section!!
 ORG:    daniel-templates
-REPO:   template_project
+REPO:   template-project
 -->
 
 
-# [![daniel-templates/][icon_daniel-templates]][home_daniel-templates]  template_project
+# [![daniel-templates/][icon_daniel-templates]][home_daniel-templates]  template-project
 
 <!-- TODO: Edit description. -->
 ##### A base template for Git-managed projects. Other project templates can be found at [daniel-templates][home_daniel-templates].
@@ -52,13 +52,13 @@ and a remote for each parent template:
     cd new_repo
     git init
     git remote add origin git@github.com:my_organization/new_repo.git
-    git remote add template_project https://github.com/daniel-templates/template_project.git
+    git remote add template-project https://github.com/daniel-templates/template-project.git
     git fetch --all
 ```
 3. Create branch `main` (setting as default), point it at the parent's `main`, and set its *upstream* (push/pull) to `origin`.
 ```
     git branch -M main
-    git reset --hard template_project/main
+    git reset --hard template-project/main
     git push --force -u origin main
 ```
 4. Create branch `dev`, point it to the same commit as `main`, and set its *upstream* (push/pull) to `origin`.
@@ -78,7 +78,7 @@ and a remote for each parent template:
 #### Downloading the repository:
 In a terminal window, clone this repo to your system *with submodules*:
 ```
-git clone --recurse-submodules https://github.com/daniel-templates/template_project.git
+git clone --recurse-submodules https://github.com/daniel-templates/template-project.git
 ```
 If you already cloned the repository without ```--recurse-submodules```, you'll need to run the following from the root directory of the repository:
 ```
@@ -87,7 +87,7 @@ git submodule update --init --recursive
 
 
 #### Installing the software:
-Enter the project directory using ```cd template_project``` , then run the following commands to install:
+Enter the project directory using ```cd template-project``` , then run the following commands to install:
 ```
 make install
 ```
@@ -193,7 +193,7 @@ Commits (other than Merge commits) to `main` will be blocked by the pre-commit h
 2. Merge each parent template's `main` branch into the local `dev` branch:
 ```
     git checkout dev
-    git merge --no-ff template_project/main
+    git merge --no-ff template-project/main
     git push origin dev
 ```
 
