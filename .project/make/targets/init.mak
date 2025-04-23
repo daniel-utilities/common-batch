@@ -18,15 +18,26 @@
 #   Targets should be .PHONY if they do not produce an actual file on the system.
 #===============================================================================
 
-# Top-level Target
+# Config
+$(eval $(call set_helptext,init,\
+  Initializes this project's development environment,\
+  This is a standard top-level target.$(LF)\
+  Projects can change the behavior of this target through$(LF)\
+  two methods:$(LF)\
+  $(LF)\
+  1: define new targets and append them as prereqs$(LF)\
+  _    (see init.mak for details)$(LF)\
+  2: leverage existing prereqs by overwriting their variables$(LF)\
+  _    (see Related Targets below),\
+$(EMPTY)\
+))
+
+# Definition
 .PHONY: init
 init:
 	$(PRINT_TRACE)
 
-# Help text
-$(eval $(call set_helptext,init, \
-  Initializes this project's development environment \
-))
+
 
 #-------------------------------------------------------------------------------
 # UPSTREAM: daniel-templates/template-project
@@ -34,13 +45,21 @@ $(eval $(call set_helptext,init, \
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # TARGET: init.git.gitconfig
-#   Configures Git include.path and makes all Git hooks executable
+#   Sets Git:include.patth to project .gitconfig
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 init: | init.git.gitconfig
 
 # Config
 GIT_CONFIG_FILE ?= .project/git/.gitconfig
 GIT_HOOKS_DIR ?= .project/git/hooks
+
+$(eval $(call set_helptext,init.git.gitconfig,\
+$(EMPTY),\
+  Sets Git property "include.path" to GIT_CONFIG_FILE.$(LF)\
+  Also sets executable on files in GIT_HOOKS_DIR.,\
+  GIT_CONFIG_FILE\
+  GIT_HOOKS_DIR\
+))
 
 # Definition
 .PHONY: init.git.gitconfig
@@ -54,23 +73,32 @@ endif
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # TARGET: init.create.dirs
-#   Ensures various temporary directories exist
+#   Creates directories
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-init.create.dirs: | $(CREATE_DIRS)
+init: | init.create.dirs
 
 # Config
 CREATE_DIRS ?=
 
+$(eval $(call set_helptext,init.create.dirs,\
+$(EMPTY),\
+  Creates each directory listed in CREATE_DIRS.,\
+  CREATE_DIRS\
+))
+
 # Definition
 .PHONY: init.create.dirs
-init.create.dirs:
-	$(PRINT_TRACE)
+init.create.dirs: | $(CREATE_DIRS)
 
-# Dynamically create a target for each path in CREATE_DIRS
-# Set init.create.dirs as a prereq so PRINT_TRACE is run once before this group
-$(CREATE_DIRS): | init.create.dirs
+# Create a target for each path in CREATE_DIRS
+$(CREATE_DIRS): | init.create.dirs.pre
 	$(call mkdir,$@)
 
+# Pre-target, runs once before any number of $(CREATE_DIRS) targets
+.PHONY: init.create.dirs.header
+init.create.dirs.pre:
+	$(info )
+	$(info ======= init.create.dirs  =======)
 
 
 #-------------------------------------------------------------------------------

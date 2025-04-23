@@ -88,23 +88,23 @@ mkpath = $(subst /,$(FILESEP),$(subst $(BACKSLASH),$(FILESEP),$(call concat,$(FI
 
 # $(eval $(call set_helptext,target,\
 # short description text, \
-# $(HELP_INDENT)optional extended%(LF)\
-# $(HELP_INDENT)multiline text\
+# optional extended$(LF)\
+# multiline text,\
+# LIST_OF_VARIABLES SPACE SEPARATED
 # ))
-# Defines a target "help.{target}" which prints a description of {target}.
-# It will be automatically invoked with the command "make help".
+# Stores usage info and help text for the given target.
+# If a short description is provided, "make help" will print it.
+# If a long description is provided, "make help.{target}" will print it.
+# If a list of variable names are provided, variables and their values
+#   will be printed below the long description.
 #
 define set_helptext
 help_targets += help.$(strip $(1))
 help.$(strip $(1)).shortdesc := $(strip $(2))
-help.$(strip $(1)).longdesc := $(3)
-.PHONY: help.$(strip $(1))
-help.$(strip $(1)):
-	$$(info )
-	$$(info Usage:)
-	$$(info $$(HELP_INDENT)$$(call rpad,$$(patsubst help.%,%,$$@),$$(HELP_TARGET_COL_WIDTH)) $$($$@.shortdesc))
-	$$(info )
-	$$(if $$($$@.longdesc),$$(info $$($$@.longdesc)$$(LF)))
+define help.$(strip $(1)).longdesc
+$(3)
+endef
+help.$(strip $(1)).variables := $(strip $(4))
 endef
 
 

@@ -135,12 +135,26 @@ ifeq "$(SHELL_TYPE)" "POSIX"
 endif
 
 
-#### MAP SHELL COMMANDS
-# Use with "call" function.
-# Examples:
+#### SHELL COMMANDS
+# Path arguments can be specified with "/" or "\" and will be automatically corrected for the platform.
 #
-#   $(call mkdir,./path/to/a/dir)
-#   $(call copy,source/file.txt,dest)
+# $(call true)                       Sets the shell command's exit code to true/success
+# $(call false)                      Sets the shell command's exit code to false/failure
+# $(call nop)                        Runs a shell command which does nothing. Useful for suppressing "Nothing to be done for target" messages.
+# $(call echo,{string})              Prints the string
+# $(call line)                       Print an empty line
+# $(call ls,{path})                  Lists files under the given path
+# $(call chmod,{args},{path})        Standard POSIX chmod. Calls "nop" on non-posix systems.
+# $(call mkdir,{path})               Creates the directory, if it doesn't already exist.
+# $(call rm,{path})                  Deletes a file, if it exists.
+# $(call rmdir,{path})               Deletes a directory, if it exists.
+# $(call copy,{src},{dst})           Copies {src} file to {dst}.
+#                                      If {dst} does not exist, creates new file {dst}.
+#                                      If {dst} is a file, overwrites.
+#                                      If {dst} is a directory, creates new file {dst}/basename({src})
+# $(call copydir,{src},{dst})        Copies {src} directory and its contents to {dst}.
+#                                      If {dst} does not exist, creates new directory {dst}.
+#                                      If {dst} is a directory, copies the CONTENTS of {src} into {dst}, overwriting files as necessary.
 #
 
 ifeq "$(SHELL_TYPE)" "CMD"
@@ -148,27 +162,27 @@ ifeq "$(SHELL_TYPE)" "CMD"
     SILENT := 1>nul
     true = (call )
     false = (call)
-    echo = (echo($(call mkpath,$(1)))
-    nop = (echo(1>nul)
+    nop = echo(1>nul
+    echo = echo($(1)
+    line = echo(
+    ls = dir /b "$(call mkpath,$(1))"
     chmod = $(NOP)
-    line = (echo()
-    ls = (dir /b "$(call mkpath,$(1))")
-    mkdir = (if not exist "$(call mkpath,$(1))\" ( mkdir "$(call mkpath,$(1))" ))
-    rm = (if exist "$(call mkpath,$(1))" ( del /f /q "$(call mkpath,$(1))" ))
-    rmdir = (if exist "$(call mkpath,$(1))\" ( rmdir /s /q "$(call mkpath,$(1))" ))
-    copy = (xcopy /Y /I /-I "$(call mkpath,$(1))" "$(call mkpath,$(2))")
-    copydir = (xcopy /Y /I /E "$(call mkpath,$(1))" "$(call mkpath,$(2))")
+    mkdir = if not exist "$(call mkpath,$(1))\" ( mkdir "$(call mkpath,$(1))" )
+    rm = if exist "$(call mkpath,$(1))" ( del /f /q "$(call mkpath,$(1))" )
+    rmdir = if exist "$(call mkpath,$(1))\" ( rmdir /s /q "$(call mkpath,$(1))" )
+    copy = xcopy /Y /I /-I "$(call mkpath,$(1))" "$(call mkpath,$(2))"
+    copydir = xcopy /Y /I /E "$(call mkpath,$(1))" "$(call mkpath,$(2))"
 endif
 ifeq "$(SHELL_TYPE)" "POWERSHELL"
     CMDSEP := ;
     SILENT :=
     true =
     false =
-    echo = Write-Output '$(call mkpath,$(1))'
     nop = ? .
-    chmod = $(NOP)
+    echo = Write-Output '$(1)'
     line = Write-Output ''
     ls = Get-ChildItem -Name '$(call mkpath,$(1))'
+    chmod = $(NOP)
     mkdir = New-Item -ItemType Directory -Force -Path '$(call mkpath,$(1))'
     rm = Remove-Item -Force -Path '$(call mkpath,$(1))'
     rmdir = Remove-Item -Force -Recurse -Path '$(call mkpath,$(1))'
@@ -180,11 +194,11 @@ ifeq "$(SHELL_TYPE)" "POSIX"
     SILENT := > /dev/null
     true = true
     false = false
-    echo = echo "$(call mkpath,$(1))"
     nop = :
-    chmod = chmod $(1) "$(call mkpath,$(2))"
+    echo = echo "$(1)"
     line = echo ""
     ls = ls -A -1 --color=no "$(call mkpath,$(1))"
+    chmod = chmod $(1) "$(call mkpath,$(2))"
     mkdir = mkdir -p "$(call mkpath,$(1))"
     rm = rm -f "$(call mkpath,$(1))"
     rmdir = rm -rf "$(call mkpath,$(1))"
@@ -193,11 +207,6 @@ ifeq "$(SHELL_TYPE)" "POSIX"
 endif
 
 
-
-
-
-
-
-$(info OS_TYPE:     $(OS_TYPE))
-$(info SHELL_TYPE:  $(SHELL_TYPE))
-$(info SHELL:       $(SHELL) $(.SHELLFLAGS))
+#$(info OS_TYPE:     $(OS_TYPE))
+#$(info SHELL_TYPE:  $(SHELL_TYPE))
+#$(info SHELL:       $(SHELL) $(.SHELLFLAGS))

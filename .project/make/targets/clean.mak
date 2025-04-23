@@ -18,15 +18,25 @@
 #   Targets should be .PHONY if they do not produce an actual file on the system.
 #===============================================================================
 
-# Top-level Target
+# Config
+$(eval $(call set_helptext,clean,\
+  Resets this project's development environment,\
+  This is a standard top-level target.$(LF)\
+  Projects can change the behavior of this target through$(LF)\
+  two methods:$(LF)\
+  $(LF)\
+  1: define new targets and append them as prereqs$(LF)\
+  _    (see clean.mak for details)$(LF)\
+  2: leverage existing prereqs by overwriting their variables$(LF)\
+  _    (see Related Targets below),\
+$(EMPTY)\
+))
+
+# Definition
 .PHONY: clean
 clean:
 	$(PRINT_TRACE)
 
-# Help text
-$(eval $(call set_helptext,clean, \
-  Resets this project's development environment \
-))
 
 #-------------------------------------------------------------------------------
 # UPSTREAM: daniel-templates/template-project
@@ -39,6 +49,20 @@ $(eval $(call set_helptext,clean, \
 clean: | clean.git.rm-cached
 
 # Config
+$(eval $(call set_helptext,clean.git.rm-cached,\
+$(EMPTY),\
+  Untracks all files in the repo's .gitignore.$(LF)\
+  $(LF)\
+  If a file has already been committed to the repo$(COMMA) and$(LF)\
+  is later added to .gitignore$(COMMA) the file remains in the$(LF)\
+  repo until it is explicitly removed from tracking.$(LF)\
+  $(LF)\
+  This is equivalent to running:$(LF)\
+  $(LF)\
+  git rm -rf --cached --quiet .$(LF)\
+  git add --all,\
+$(EMPTY),\
+))
 
 # Definition
 .PHONY: clean.git.rm-cached
@@ -47,32 +71,27 @@ clean.git.rm-cached:
 	git rm -rf --cached --quiet .
 	git add --all
 
-# Help text
-$(eval $(call set_helptext,clean.git.rm-cached, \
-  Untrack all files in the repo's .gitignore \
-))
-
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # TARGET: clean.remove.dirs
-#   Deletes one or more directories
+#   Deletes directories
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 clean: | clean.remove.dirs
 
 # Config
 REMOVE_DIRS ?=
 
+$(eval $(call set_helptext,clean.remove.dirs,\
+$(EMPTY),\
+  Removes each directory listed in REMOVE_DIRS,\
+  REMOVE_DIRS\
+))
+
 # Definition
 .PHONY: clean.remove.dirs
-.ONESHELL: clean.remove.dirs
 clean.remove.dirs:
 	$(PRINT_TRACE)
 	$(foreach dir,$(REMOVE_DIRS),$(call rmdir,$(dir)) $(LF))
-
-# Help text
-$(eval $(call set_helptext,clean.remove.dirs, \
-  Deletes one or more directories \
-))
 
 
 #-------------------------------------------------------------------------------

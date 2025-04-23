@@ -18,15 +18,25 @@
 #   Targets should be .PHONY if they do not produce an actual file on the system.
 #===============================================================================
 
-# Top-level Target
+# Config
+$(eval $(call set_helptext,all, \
+  Build all artifacts,\
+  This is a standard top-level target.$(LF)\
+  Projects can change the behavior of this target through$(LF)\
+  two methods:$(LF)\
+  $(LF)\
+  1: define new targets and append them as prereqs$(LF)\
+  _    (see all.mak for details)$(LF)\
+  2: leverage existing prereqs by overwriting their variables$(LF)\
+  _    (see Related Targets below),\
+$(EMPTY)\
+))
+
+# Definition
 .PHONY: all
 all:
 	$(PRINT_TRACE)
 
-# Help text
-$(eval $(call set_helptext,all, \
-  Default target \
-))
 
 #-------------------------------------------------------------------------------
 # UPSTREAM: daniel-templates/template-project

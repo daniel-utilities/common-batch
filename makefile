@@ -18,15 +18,9 @@ include $(MAKE_DIR)/platform.mak
 # Project-specific configuration
 include $(MAKE_DIR)/config.mak
 
-# Machine-specific (untracked) configuration
-include $(wildcard $(MAKE_DIR)/*.local.mak)
-
-# Set default target
-DEFAULT_TARGET ?= all
+# Set default target (override value in config.mak, not here)
+DEFAULT_TARGET ?= help
 $(DEFAULT_TARGET):
 
 # Target definitions
-include $(wildcard $(MAKE_TARGETS_DIR)/*.mak)
-
-# Machine-specific (untracked) target definitions
-include $(wildcard $(MAKE_TARGETS_DIR)/*.local.mak)
+include $(sort $(wildcard $(MAKE_TARGETS_DIR)/*.mak))

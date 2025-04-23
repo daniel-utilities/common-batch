@@ -9,7 +9,8 @@
 #-------------------------------------------------------------------------------
 
 # Default Values
-DEFAULT_TARGET := all
+DEFAULT_TARGET ?= help
+DISABLE_IMPLICIT ?= true
 
 GIT_CONFIG_FILE = .project/git/.gitconfig
 GIT_HOOKS_DIR = .project/git/hooks
