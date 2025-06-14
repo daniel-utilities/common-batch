@@ -17,7 +17,7 @@
 
 
 		//----------------------------------------------------------------------
-		//  UPSTREAM: (this project)
+		//  CURRENT PROJECT
 		//----------------------------------------------------------------------
 
 		// Reference folders
@@ -60,7 +60,7 @@
 			"**/.vscode/settings.json": true,
 
 			//------------------------------------------------------------------
-			//  UPSTREAM: (this project)
+			//  CURRENT PROJECT
 			//------------------------------------------------------------------
 
 			// Reference folders
@@ -94,7 +94,7 @@
 			"**/build/**": true,
 
 			//------------------------------------------------------------------
-			//  UPSTREAM: (this project)
+			//  CURRENT PROJECT
 			//------------------------------------------------------------------
 
 			// Reference folders
@@ -119,7 +119,7 @@
 			"**/build/**": true,
 
 			//------------------------------------------------------------------
-			//  UPSTREAM: (this project)
+			//  CURRENT PROJECT
 			//------------------------------------------------------------------
 
 			// Reference folders
@@ -201,12 +201,12 @@
 		//  UPSTREAM: daniel-templates/template-project
 		//----------------------------------------------------------------------
 
-		// Start terminals in the workspace directory
+		// Start terminals in the workspace root directory
 		"terminal.integrated.cwd": "${workspaceFolder}",
 		"powershell.cwd": "${workspaceFolder}",
 
 		//----------------------------------------------------------------------
-		//  UPSTREAM: (this project)
+		//  CURRENT PROJECT
 		//----------------------------------------------------------------------
 
 		// "terminal.integrated.defaultProfile.windows": "PowerShell",

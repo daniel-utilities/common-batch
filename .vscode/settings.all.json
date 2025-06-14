@@ -7,16 +7,41 @@
 
 
     "files.eol": "\n",
+    "files.encoding": "utf8",
     "[bat]": {
+        "files.encoding": "cp437",
         "files.eol": "\r\n"
     },
     "[cmd]": {
+        "files.encoding": "cp437",
         "files.eol": "\r\n"
     },
     "[inf]": {
+        "files.encoding": "utf16le",
         "files.eol": "\r\n"
     },
     "[reg]": {
+        "files.encoding": "utf16le",
+        "files.eol": "\r\n"
+    },
+    "[admx]": {
+        "files.encoding": "utf8",
+        "files.eol": "\r\n"
+    },
+    "[adml]": {
+        "files.encoding": "utf8",
+        "files.eol": "\r\n"
+    },
+    "[adm]": {
+        "files.encoding": "utf16le",
+        "files.eol": "\r\n"
+    },
+    "[cmtx]": {
+        "files.encoding": "utf8bom",
+        "files.eol": "\r\n"
+    },
+    "[pol]": {
+        "files.encoding": "utf16le",
         "files.eol": "\r\n"
     },
     "[makefile]": {
