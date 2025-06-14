@@ -16,10 +16,13 @@
 # Force Unix-style line endings (\n) for all text files except certain Windows-specific filetypes (\r\n)
 # Also add to .vscode/settings.all.json to enforce correct line endings during development.
 * text=auto eol=lf
-*.{bat,[bB][aA][tT]} text eol=crlf
-*.{cmd,[cC][mM][dD]} text eol=crlf
-*.{inf,[cC][mM][dD]} text eol=crlf
-*.{reg,[iI][nN][fF]} text eol=crlf
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+*.inf   text eol=crlf
+*.reg   text eol=crlf
+
+# Set certain filetypes as binary, not text
+*.pdf   -text
 
 
 #-------------------------------------------------------------------------------
