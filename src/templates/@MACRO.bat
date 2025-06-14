@@ -27,8 +27,7 @@
 
 
 %====================================================================%  goto :EOF
-:.autogoto.--import [verify=true||false]    Import all macros into the current scope.
-:.autogoto./import
+:.autogoto./import [verify=true]            Import all macros into the current scope.
 
 if "!!"=="" call :throw "Macro definition requires DisableDelayedExpansion."
 
@@ -104,7 +103,7 @@ goto :__exit_success
 
 %------------------------------------------------------------------------------%
 :__exit_success
-set "IMPORTS=%@MACRO.NAMESPACE% %IMPORTS%"
+set "IMPORTS=%@MACRO.PREFIX% %IMPORTS%"
 for %%V in (%@MACRO.TMPV%) do set "%%V="
 exit /b 0
 :__exit_failure
@@ -123,8 +122,7 @@ exit /b 1
 
 
 %====================================================================%  goto :EOF
-:.autogoto.--test name [args]               Runs built-in unit tests.
-:.autogoto./test
+:.autogoto./test name [args]                Runs built-in unit tests.
 ::  Runs tests for <basename> macros.
 ::  Returns:
 ::    ERRORLEVEL    0 if all tests were successful, 1 if tests failed.
@@ -170,8 +168,8 @@ exit /b 1
 
 
 %====================================================================%  goto :EOF
-:.autogoto./? [macro]         Prints detailed documentation.
-:: This section is inaccessible but included to provide the help text
+:.autogoto./? [macro]                       Prints detailed documentation.
+:: This section is inaccessible but included to provide the "/?" help text.
 %=========================  END .autogoto./?  =======================%  goto :EOF
 
 

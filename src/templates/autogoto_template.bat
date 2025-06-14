@@ -26,16 +26,15 @@ exit /b 0
 
 
 %====================================================================%  goto :EOF
-:.autogoto.--flag               Description text
 :.autogoto./flag                Description text
 setlocal DisableDelayedExpansion
-:: This code executed if script is run with the first argument "--flag" or "/flag"
+:: This code executed if script is run with the first argument "/flag"
 exit /b 0
 %=======================  END .autogoto./flag  ======================%  goto :EOF
 
 
 
 %====================================================================%  goto :EOF
-:.autogoto./? [keyword]         Prints detailed documentation
-:: This section is inaccessible but included to provide the help text
+:.autogoto./? [keyword]         Prints detailed documentation.
+:: This section is inaccessible but included to provide the "/?" help text.
 %=========================  END .autogoto./?  =======================%  goto :EOF
