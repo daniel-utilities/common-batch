@@ -340,8 +340,6 @@ for /F delims^=^ eol^= %%T in ("!LINE_MATCHES!") do (
 )
 
 
-
-
 :: Split SECTION_FILTERS into SECTION_FILTER_SETS.
 ::   Remove SECTION_FILTER_INCLUSION_MARKER before each filter
 ::   Remove SECTION_FILTER_EXCLUSION_MARKER before each filter and place quotes around exclusion filters
@@ -718,10 +716,13 @@ exit /b 0
 ::==============================================================================
 :throw "Error message"|msg_var [ERRORLEVEL]
 ::
-::   Prints an error message, returns to the caller, runs ERROR_HOOK, sets ERRORLEVEL.
+::   Prints an error message, returns to the caller, calls ERROR_HOOK, sets ERRORLEVEL.
+::   If [ERRORLEVEL] is provided, :throw returns that error value to the caller's context.
+::   Otherwise, if :throw is called while ERRORLEVEL is nonzero, its original value is maintained;
+::   Otherwise, :throw returns ERRORLEVEL=1.
 ::
     setlocal DisableDelayedExpansion & set "ERRORLEVEL=%ERRORLEVEL%"
-    set ^"throw.msgv=%1"
+    set "throw.msgv=%1"
     set ^"throw.msg=%~1"
     setlocal EnableDelayedExpansion
     if defined throw.msgv if "!throw.msgv!"=="!throw.msg!" ( set "throw.msg=!%1!"
@@ -730,12 +731,8 @@ exit /b 0
     if not "%~2"=="" ( set "ERRORLEVEL=%~2"
     ) else if "!ERRORLEVEL!"=="0" set "ERRORLEVEL=1"
     (goto) 2>nul & (
-        setlocal DisableDelayedExpansion
-        call echo(  --[ %%~nx0 ]-- 1>&2
-        endlocal
-        setlocal EnableDelayedExpansion
-        echo(%throw.msg% 1>&2 !
-        endlocal
+        setlocal DisableDelayedExpansion & call echo(  --[ %%~nx0 ]-- 1>&2 & endlocal
+        setlocal EnableDelayedExpansion  &      echo(%throw.msg%      1>&2 & endlocal !
         if defined ERROR_HOOK call :%ERROR_HOOK% %ERRORLEVEL%
         if %ERRORLEVEL% equ 1 (call) else if %ERRORLEVEL% equ 0 (call ) else cmd /c exit %ERRORLEVEL%
     )
@@ -759,6 +756,7 @@ exit /b 0
 ::
     setlocal EnableDelayedExpansion
     for %%V in (%*) do echo(%%~V=[!%%~V!]
+    endlocal
     exit /b 0
 
 
