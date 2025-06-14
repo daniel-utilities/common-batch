@@ -10,19 +10,23 @@
     "files.encoding": "utf8",
     "[bat]": {
         "files.encoding": "cp437",
-        "files.eol": "\r\n"
+        "files.eol": "\r\n",
+        "editor.renderWhitespace": "boundary"
     },
     "[cmd]": {
         "files.encoding": "cp437",
-        "files.eol": "\r\n"
+        "files.eol": "\r\n",
+        "editor.renderWhitespace": "boundary"
     },
     "[inf]": {
         "files.encoding": "utf16le",
-        "files.eol": "\r\n"
+        "files.eol": "\r\n",
+        "editor.renderWhitespace": "boundary"
     },
     "[reg]": {
         "files.encoding": "utf16le",
-        "files.eol": "\r\n"
+        "files.eol": "\r\n",
+        "editor.renderWhitespace": "boundary"
     },
     "[admx]": {
         "files.encoding": "utf8",

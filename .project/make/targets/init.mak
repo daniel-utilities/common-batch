@@ -64,11 +64,11 @@ $(EMPTY),\
 # Definition
 .PHONY: init.git.gitconfig
 init.git.gitconfig:
-ifneq "$(shell git config --local --get include.path)" "../$(GIT_CONFIG_FILE)"
+#ifneq "$(shell git config --local --get include.path)" "../$(GIT_CONFIG_FILE)"
 	$(PRINT_TRACE)
 	git config --local include.path ../$(GIT_CONFIG_FILE)
 	$(call chmod,--verbose u+x,$(GIT_HOOKS_DIR)/*)
-endif
+#endif
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

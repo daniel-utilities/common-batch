@@ -33,7 +33,8 @@
 *.yml   text diff
 
 # Set certain filetypes as binary, not text; no diff is performed
-*.docx  binary      # Microsoft Office
+#               Microsoft Office
+*.docx  binary
 *.docm  binary
 *.dotx  binary
 *.dotm  binary
@@ -49,14 +50,18 @@
 *.ppsx  binary
 *.ppsm  binary
 *.pub   binary
-*.odt   binary      # OpenDocument
+#               OpenDocument
+*.odt   binary
 *.ods   binary
 *.odp   binary
-*.sxw   binary      # OpenOffice.org
+#               OpenOffice.org
+*.sxw   binary
 *.sxc   binary
 *.sxi   binary
-*.pdf   binary      # Portable Document Format
-*.jpg   binary      # Photo
+#               Portable Document Format
+*.pdf   binary
+#               Photo
+*.jpg   binary
 *.jpeg  binary
 *.png   binary
 *.tif   binary
@@ -64,12 +69,17 @@
 *.gif   binary
 *.bmp   binary
 *.raw   binary
-*.wav   binary      # Audio
+*.webp  binary
+*.svg   text
+#               Audio
+*.wav   binary
 *.mp3   binary
 *.ogg   binary
-*.mp4   binary      # Video
+#               Video
+*.mp4   binary
 *.wmv   binary
-*.exe   binary      # Executable
+#               Executable
+*.exe   binary
 *.a     binary
 *.dll   binary
 *.so    binary
@@ -82,7 +92,8 @@
 *.snap  binary
 *.flatpak binary
 *.apk   binary
-*.zip   binary      # Compressed
+#               Compressed
+*.zip   binary
 *.7z    binary
 *.rar   binary
 *.tar   binary
@@ -91,15 +102,20 @@
 *.wim   binary
 *.swm   binary
 *.esd   binary
-*.db    binary      # Dataset
+#               Binary Datasets
+*.db    binary
 *.sql   binary
 *.sqlite binary
-*.cer   binary      # Certificates
-*.iso   binary      # Disk Image
+#               Certificates
+*.cer   binary
+#               Disk Image
+*.iso   binary
 *.cue   binary
-*.ovf   binary      # Virtualization
+#               Virtualization
+*.ovf   binary
 *.ova   binary
-*.bin   binary      # Misc
+#               Misc
+*.bin   binary
 *.map   binary
 *.rc    binary
 
