@@ -48,7 +48,7 @@
 			//------------------------------------------------------------------
 
 			// Git Management (can break Git if modified inadvertently)
-			"**/.project/git/**": false,
+			"**/.project/git/**": true,
 
 			// VSCode Folder Settings
 			//   Folder settings (.vscode/settings.json) are applied after Workspace settings (this file).
