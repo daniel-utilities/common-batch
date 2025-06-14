@@ -35,7 +35,7 @@ set "@MACRO.PREFIX=%~n0"            %= Macro names should be prefixed with this 
 set "ns=%@MACRO.PREFIX%.local"      %= Macro-local variable names should be prefixed with this.                           =%
 set "@MACRO.NAME="                  %= Macro names should be formatted as @MACRO.PREFIX.[NAME]                            =%
 set "@MACRO.VERIFY="                %= If defined, a marker is placed at the end of each macro for verification purposes. =%
-if /I "%~2"=="verify" if /I "%~3"=="true" set "@MACRO.VERIFY=!@MACRO.END!"
+if /I "%~2"=="verify" if /I "%~3"=="true" set "@MACRO.VERIFY=!@MACRO.VERIFY!"
 
 %= List of temp variables to clear before returning to caller. =%
 set "@MACRO.TMPV=@MACRO.PREFIX ns @MACRO.NAME @MACRO.VERIFY @MACRO.TMPV"
@@ -75,7 +75,7 @@ set ^"%@MACRO.NAME%=for %%# in (1 3 2 1) do if %%#==1 ( %#EOL%
 %------------------------------------------------------------------------% %#EOL%
 %- SECTION 1  Clear Locals                                              -% %#EOL%
 for %%V in (%= List of macro-local variables to clear =%%#EOL%
-params params[#] !params! %#EOL%
+params params[#] !%ns%.params! %#EOL%
 ) do set "%ns%.%%V=" %#EOL%
 %------------------------------------------------------------------------% %#EOL%
 %- SECTION 2  Macro body                              -%) else if %%#==2 ( %#EOL%
@@ -91,7 +91,13 @@ for /L %%i in (1,1,!%ns%.params[#]!) do (%#EOL%
 ) %#EOL%
 echo ==== Leaving macro %@MACRO.NAME%... ==== %#EOL%
 %------------------------------------------------------------------------% %#EOL%
-%- SECTION 3  Input macro parameters      -% ) else set %ns%.params=%@MACRO.END%"
+%- SECTION 3  Input macro parameters   -% ) else set %ns%.params=%@MACRO.VERIFY%"
+
+
+if defined @MACRO.VERIFY call :macro_verify %@MACRO.NAME% @MACRO.VERIFY || (
+  set "errmsg=Macro %@MACRO.NAME% has an invalid definition:!LF!%@MACRO.NAME%=[!%@MACRO.NAME%!]!LF!"
+  call :throw errmsg
+)
 
 goto :__skip_test
 :__test_EXAMPLE
@@ -107,16 +113,9 @@ set "IMPORTS=%@MACRO.PREFIX% %IMPORTS%"
 for %%V in (%@MACRO.TMPV%) do set "%%V="
 exit /b 0
 :__exit_failure
-echo ERROR: Import %NS% failed 1>&2
+call :throw "Import %@MACRO.PREFIX% failed."
 for %%V in (%@MACRO.TMPV%) do set "%%V="
 exit /b 1
-:__check_macro MACRO_NAME
-  setlocal EnableDelayedExpansion
-  set "errmsg="
-  if "%~1"==""                      set "errmsg=No macro provided."
-  if not defined %~1                set "errmsg=Macro %~1 is not defined."
-  if not "!%~1:*@MACRO.END=!"=="^!" set "errmsg=Macro %~1 has an invalid definition:!LF!%~1=[!%~1!]!LF!"
-  if defined errmsg ( call :throw errmsg ) else exit /b 0
 %======================  END .autogoto./import  =====================%  goto :EOF
 
 
@@ -173,6 +172,17 @@ exit /b 1
 %=========================  END .autogoto./?  =======================%  goto :EOF
 
 
+::==============================================================================
+:macro_verify MACRO ENDMARKER
+::
+::
+::
+  setlocal EnableDelayedExpansion
+  if "%~1"==""               exit /b 1
+  if not defined %~1         exit /b 1
+  if not "!%~1:*%~2=!"=="^!" exit /b 1
+  exit /b 0
+
 
 ::==============================================================================
 :throw "Error message"|msg_var [ERRORLEVEL]
@@ -204,12 +214,5 @@ exit /b 1
     setlocal DisableDelayedExpansion & set "ERRORLEVEL=%ERRORLEVEL%"
     if not "%~1"=="" set "ERRORLEVEL=%~1"
     (goto) 2>nul & (
-        %=======================================================================%
-        %=                              Cleanup                                =%
-        %=======================================================================%
-
-        for %%V in (%@MACRO.TMPV%) do set "%%V="
-
-        %=======================================================================%
         exit /b %ERRORLEVEL%
     )
