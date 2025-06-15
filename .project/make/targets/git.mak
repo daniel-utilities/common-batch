@@ -143,8 +143,7 @@ $(EMPTY),\
 git.gitattributes: | git.require.no-uncommitted-changes
 	$(PRINT_TRACE)
 	$(eval GIT_COMMIT_MESSAGE ?= Reencoded files according to .gitattributes)
-	git rm -rf --cached --quiet .
-	git add --update --renormalize .
+	git add --renormalize .
 	-git commit -m "$(GIT_COMMIT_MESSAGE)"
 	git rm -rf --cached --quiet .
 	git reset --hard
