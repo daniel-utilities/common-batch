@@ -89,7 +89,7 @@ $(EMPTY),\
   $(LF)\
   This process is equivalent to running:$(LF)\
   $(LF)\
-    git rm -rf --cached .$(LF)\
+    git rm -rf --cached --quiet .$(LF)\
     git add --all$(LF)\
     git commit -m "GIT_COMMIT_MESSAGE"$(LF)\
   $(LF),\
@@ -100,8 +100,8 @@ $(EMPTY),\
 .PHONY: git.gitignore
 git.gitignore: | git.require.no-uncommitted-changes
 	$(PRINT_TRACE)
-	$(eval GIT_COMMIT_MESSAGE ?= Updated tracking according to .gitignore)
-	git rm -rf --cached .
+	$(eval GIT_COMMIT_MESSAGE ?= Updated file tracking according to .gitignore)
+	git rm -rf --cached --quiet .
 	git add --all
 	-git commit -m "$(GIT_COMMIT_MESSAGE)"
 
@@ -127,9 +127,10 @@ $(EMPTY),\
   $(LF)\
   This process is equivalent to running:$(LF)\
   $(LF)\
-    git add --renormalize .$(LF),\
+    git rm -rf --cached --quiet .$(LF)\
+    git add --update --renormalize .$(LF),\
     git commit -m "GIT_COMMIT_MESSAGE"$(LF)\
-    git rm -rf --cached .$(LF)\
+    git rm -rf --cached --quiet .$(LF)\
     git reset --hard$(LF)\
   $(LF)\
   Be sure these changes are also reflected in .vscode/settings.all.json$(LF)\
@@ -141,10 +142,11 @@ $(EMPTY),\
 .PHONY: git.gitattributes
 git.gitattributes: | git.require.no-uncommitted-changes
 	$(PRINT_TRACE)
-	$(eval GIT_COMMIT_MESSAGE ?= Renormalized files according to .gitattributes)
+	$(eval GIT_COMMIT_MESSAGE ?= Reencoded files according to .gitattributes)
+	git rm -rf --cached --quiet .
 	git add --update --renormalize .
 	-git commit -m "$(GIT_COMMIT_MESSAGE)"
-	git rm -rf --cached .
+	git rm -rf --cached --quiet .
 	git reset --hard
 
 
