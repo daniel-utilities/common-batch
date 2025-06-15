@@ -43,32 +43,8 @@ init:
 # UPSTREAM: daniel-templates/template-project
 #-------------------------------------------------------------------------------
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# TARGET: init.git.gitconfig
-#   Sets Git:include.patth to project .gitconfig
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-init: | init.git.gitconfig
-
-# Config
-GIT_CONFIG_FILE ?= .project/git/.gitconfig
-GIT_HOOKS_DIR ?= .project/git/hooks
-
-$(eval $(call set_helptext,init.git.gitconfig,\
-$(EMPTY),\
-  Sets Git property "include.path" to GIT_CONFIG_FILE.$(LF)\
-  Also sets executable on files in GIT_HOOKS_DIR.,\
-  GIT_CONFIG_FILE\
-  GIT_HOOKS_DIR\
-))
-
-# Definition
-.PHONY: init.git.gitconfig
-init.git.gitconfig:
-ifneq "$(shell git config --local --get include.path)" "../$(GIT_CONFIG_FILE)"
-	$(PRINT_TRACE)
-	git config --local include.path ../$(GIT_CONFIG_FILE)
-	$(call chmod,--verbose u+x,$(GIT_HOOKS_DIR)/*)
-endif
+# External prereqs
+init: | git.gitconfig
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -102,7 +78,7 @@ init.create.dirs.pre:
 
 
 #-------------------------------------------------------------------------------
-# UPSTREAM: (this project)
+# CURRENT PROJECT
 #-------------------------------------------------------------------------------
 
 
