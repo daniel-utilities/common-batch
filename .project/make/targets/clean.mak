@@ -42,34 +42,7 @@ clean:
 # UPSTREAM: daniel-templates/template-project
 #-------------------------------------------------------------------------------
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# TARGET: clean.git.rm-cached
-#   Untrack all files in the repo's .gitignore
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-clean: | clean.git.rm-cached
 
-# Config
-$(eval $(call set_helptext,clean.git.rm-cached,\
-$(EMPTY),\
-  Untracks all files in the repo's .gitignore.$(LF)\
-  $(LF)\
-  If a file has already been committed to the repo$(COMMA) and$(LF)\
-  is later added to .gitignore$(COMMA) the file remains in the$(LF)\
-  repo until it is explicitly removed from tracking.$(LF)\
-  $(LF)\
-  This is equivalent to running:$(LF)\
-  $(LF)\
-  git rm -rf --cached --quiet .$(LF)\
-  git add --all,\
-$(EMPTY),\
-))
-
-# Definition
-.PHONY: clean.git.rm-cached
-clean.git.rm-cached:
-	$(PRINT_TRACE)
-	git rm -rf --cached --quiet .
-	git add --all
 
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -95,7 +68,7 @@ clean.remove.dirs:
 
 
 #-------------------------------------------------------------------------------
-# UPSTREAM: (this project)
+# CURRENT PROJECT
 #-------------------------------------------------------------------------------
 
 
