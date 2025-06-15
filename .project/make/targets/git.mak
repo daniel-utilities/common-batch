@@ -44,7 +44,7 @@ git: | help.git
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # TARGET: git.gitconfig
-#   Sets Git:include.patth to project .gitconfig
+#   Sets Git:include.path to project .gitconfig
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Config
@@ -63,11 +63,9 @@ $(EMPTY),\
 # Definition
 .PHONY: git.gitconfig
 git.gitconfig:
-#ifneq "$(shell git config --local --get include.path)" "../$(GIT_CONFIG_FILE)"
 	$(PRINT_TRACE)
 	git config --local include.path ../$(GIT_CONFIG_FILE)
 	$(call chmod,--verbose u+x,$(GIT_HOOKS_DIR)/*)
-#endif
 
 
 
