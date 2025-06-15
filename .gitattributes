@@ -15,18 +15,112 @@
 
 # Force Unix-style line endings (\n) for all text files except certain Windows-specific filetypes (\r\n)
 # Also add to .vscode/settings.all.json to enforce correct line endings during development.
-* text=auto eol=lf
-*.bat   text eol=crlf
-*.cmd   text eol=crlf
-*.inf   text eol=crlf
-*.reg   text eol=crlf
+* text=auto       eol=lf     working-tree-encoding=UTF-8
+*.bat   text diff eol=crlf   working-tree-encoding=CP437
+*.cmd   text diff eol=crlf   working-tree-encoding=CP437
+*.inf   text diff eol=crlf   working-tree-encoding=UTF-16LE-BOM
+*.reg   text diff eol=crlf   working-tree-encoding=UTF-16LE-BOM
+*.admx  text diff eol=crlf   working-tree-encoding=UTF-8
+*.adml  text diff eol=crlf   working-tree-encoding=UTF-8
+*.adm   text diff eol=crlf   working-tree-encoding=UTF-16LE-BOM
+*.cmtx  text diff eol=crlf   working-tree-encoding=UTF-8-BOM
+*.pol   text diff eol=crlf   working-tree-encoding=UTF-16LE-BOM
 
-# Set certain filetypes as binary, not text
-*.pdf   -text
+# Set certain unrecognized filetypes as text to allow git diffs
+*.csv   text diff
+*.tsv   text diff
+*.xml   text diff
+*.yml   text diff
 
+# Set certain filetypes as binary, not text; no diff is performed
+#               Microsoft Office
+*.docx  binary
+*.docm  binary
+*.dotx  binary
+*.dotm  binary
+*.xlsx  binary
+*.xlsm  binary
+*.xlsb  binary
+*.xltx  binary
+*.xltm  binary
+*.pptx  binary
+*.pptm  binary
+*.potx  binary
+*.potm  binary
+*.ppsx  binary
+*.ppsm  binary
+*.pub   binary
+#               OpenDocument
+*.odt   binary
+*.ods   binary
+*.odp   binary
+#               OpenOffice.org
+*.sxw   binary
+*.sxc   binary
+*.sxi   binary
+#               Portable Document Format
+*.pdf   binary
+#               Photo
+*.jpg   binary
+*.jpeg  binary
+*.png   binary
+*.tif   binary
+*.tiff  binary
+*.gif   binary
+*.bmp   binary
+*.raw   binary
+*.webp  binary
+*.svg   text
+#               Audio
+*.wav   binary
+*.mp3   binary
+*.ogg   binary
+#               Video
+*.mp4   binary
+*.wmv   binary
+#               Executable
+*.exe   binary
+*.a     binary
+*.dll   binary
+*.so    binary
+*.msi   binary
+*.msix  binary
+*.msixbundle binary
+*.appx  binary
+*.appxbundle binary
+*.deb   binary
+*.snap  binary
+*.flatpak binary
+*.apk   binary
+#               Compressed
+*.zip   binary
+*.7z    binary
+*.rar   binary
+*.tar   binary
+*.gz    binary
+*.cab   binary
+*.wim   binary
+*.swm   binary
+*.esd   binary
+#               Binary Datasets
+*.db    binary
+*.sql   binary
+*.sqlite binary
+#               Certificates
+*.cer   binary
+#               Disk Image
+*.iso   binary
+*.cue   binary
+#               Virtualization
+*.ovf   binary
+*.ova   binary
+#               Misc
+*.bin   binary
+*.map   binary
+*.rc    binary
 
 #-------------------------------------------------------------------------------
-#  UPSTREAM: (this project)
+#  CURRENT PROJECT
 #-------------------------------------------------------------------------------
 
 
