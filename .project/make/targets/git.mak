@@ -77,7 +77,6 @@ git.gitconfig:
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Config
-GIT_COMMIT_MESSAGE ?= Removed files from tracking according to .gitignore
 
 $(eval $(call set_helptext,git.gitignore,\
 $(EMPTY),\
@@ -144,7 +143,7 @@ $(EMPTY),\
 .PHONY: git.gitattributes
 git.gitattributes: | git.require.no-uncommitted-changes
 	$(PRINT_TRACE)
-	git add --renormalize .
+	git add --update --renormalize .
 	-git commit -m "$(GIT_COMMIT_MESSAGE)"
 	git rm -rf --cached .
 	git reset --hard
