@@ -77,7 +77,6 @@ git.gitconfig:
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Config
-
 $(eval $(call set_helptext,git.gitignore,\
 $(EMPTY),\
   Untrack files identified in the repo's .gitignore.$(LF)\
@@ -101,6 +100,7 @@ $(EMPTY),\
 .PHONY: git.gitignore
 git.gitignore: | git.require.no-uncommitted-changes
 	$(PRINT_TRACE)
+	$(eval GIT_COMMIT_MESSAGE ?= Updated tracking according to .gitignore)
 	git rm -rf --cached .
 	git add --all
 	-git commit -m "$(GIT_COMMIT_MESSAGE)"
@@ -113,8 +113,6 @@ git.gitignore: | git.require.no-uncommitted-changes
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Config
-GIT_COMMIT_MESSAGE ?= Renormalized files according to .gitattributes
-
 $(eval $(call set_helptext,git.gitattributes,\
 $(EMPTY),\
   Reencode files according to the repo's .gitattributes.$(LF)\
@@ -143,6 +141,7 @@ $(EMPTY),\
 .PHONY: git.gitattributes
 git.gitattributes: | git.require.no-uncommitted-changes
 	$(PRINT_TRACE)
+	$(eval GIT_COMMIT_MESSAGE ?= Renormalized files according to .gitattributes)
 	git add --update --renormalize .
 	-git commit -m "$(GIT_COMMIT_MESSAGE)"
 	git rm -rf --cached .
