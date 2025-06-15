@@ -35,8 +35,7 @@ $(EMPTY)\
 
 # Definition
 .PHONY: git
-git:
-	$(PRINT_TRACE)
+git: | help.git
 
 
 #-------------------------------------------------------------------------------
@@ -101,11 +100,11 @@ $(EMPTY),\
 
 # Definition
 .PHONY: git.gitignore
-git.gitignore: | git.require.no-unstaged-changes git.require.no-uncommitted-changes
+git.gitignore: | git.require.no-uncommitted-changes
 	$(PRINT_TRACE)
 	git rm -rf --cached .
 	git add --all
-	git commit -m "$(GIT_COMMIT_MESSAGE)"
+	-git commit -m "$(GIT_COMMIT_MESSAGE)"
 
 
 
@@ -143,44 +142,30 @@ $(EMPTY),\
 
 # Definition
 .PHONY: git.gitattributes
-git.gitattributes: | git.require.no-unstaged-changes git.require.no-uncommitted-changes
+git.gitattributes: | git.require.no-uncommitted-changes
 	$(PRINT_TRACE)
 	git add --renormalize .
-	git commit -m "$(GIT_COMMIT_MESSAGE)"
+	-git commit -m "$(GIT_COMMIT_MESSAGE)"
 	git rm -rf --cached .
 	git reset --hard
 
 
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# TARGET: git.require.no-unstaged-changes
-#   Terminates make if repository contains unstaged changes.
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-# Config
-$(eval $(call set_helptext,git.require.no-unstaged-changes,\
-$(EMPTY),\
-  Terminates make if repository contains unstaged changes.$(LF)\
-  $(LF),\
-$(EMPTY),\
-))
-
-# Definition
-.PHONY: git.require.no-unstaged-changes
-git.require.no-unstaged-changes:
-	$(PRINT_TRACE)
-
-
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # TARGET: git.require.no-uncommitted-changes
-#   Terminates make if repository contains staged but uncommitted changes.
+#   Terminates make if repository contains unstaged or staged but uncommitted changes.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # Config
 $(eval $(call set_helptext,git.require.no-uncommitted-changes,\
 $(EMPTY),\
-  Terminates make if repository contains staged but uncommitted changes.$(LF)\
+  Terminates make with an error message if repository contains$(LF)\
+  unstaged changes$(COMMA) or staged but uncommitted changes.$(LF)\
+  $(LF)\
+  This process is equivalent to running:$(LF)\
+  $(LF)\
+    git add . && git diff --quiet && git diff --cached --quiet$(LF)\
   $(LF),\
 $(EMPTY),\
 ))
@@ -189,6 +174,7 @@ $(EMPTY),\
 .PHONY: git.require.no-uncommitted-changes
 git.require.no-uncommitted-changes:
 	$(PRINT_TRACE)
+	git add . && git diff --quiet && git diff --cached --quiet
 
 
 
