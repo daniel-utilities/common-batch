@@ -127,8 +127,7 @@ $(EMPTY),\
   $(LF)\
   This process is equivalent to running:$(LF)\
   $(LF)\
-    git rm -rf --cached --quiet .$(LF)\
-    git add --update --renormalize .$(LF),\
+    git add --renormalize .$(LF),\
     git commit -m "GIT_COMMIT_MESSAGE"$(LF)\
     git rm -rf --cached --quiet .$(LF)\
     git reset --hard$(LF)\

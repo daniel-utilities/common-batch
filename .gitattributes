@@ -17,11 +17,11 @@
 # Also add to .vscode/settings.all.json to enforce correct line endings during development.
 * text=auto       eol=lf     working-tree-encoding=UTF-8
 *.bat   text diff eol=crlf   working-tree-encoding=CP437
-#*.bat   text diff eol=lf   working-tree-encoding=UTF-8
+*.bat   text diff eol=lf   working-tree-encoding=UTF-8
 *.cmd   text diff eol=crlf   working-tree-encoding=CP437
 *.inf   text diff eol=crlf   working-tree-encoding=UTF-16LE-BOM
 *.reg   text diff eol=crlf   working-tree-encoding=UTF-16LE-BOM
-#*.reg   text diff eol=lf   working-tree-encoding=UTF-8
+*.reg   text diff eol=lf   working-tree-encoding=UTF-8
 *.admx  text diff eol=crlf   working-tree-encoding=UTF-8
 *.adml  text diff eol=crlf   working-tree-encoding=UTF-8
 *.adm   text diff eol=crlf   working-tree-encoding=UTF-16LE-BOM
