@@ -233,7 +233,7 @@ set "%%@.numq="%##EOL%
 set ^"@ARGS.SPLIT=%@#ARGS.SPLIT%"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@ARGS.SPLIT [var:args]
+:.autotest.@ARGS.SPLIT [var:args]
 	setlocal EnableDelayedExpansion
 	set "in=!%~1!" & if "!in: =!"=="" set ^"in=%#EOL%
 		item1 "item 2"		%#EOL%
@@ -375,7 +375,7 @@ set "%%@.val="%#EOL%
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@ARGS.PARSE [var:args]
+:.autotest.@ARGS.PARSE [var:args]
 	setlocal EnableDelayedExpansion
 	set "in=!%~1!" & if "!in: =!"=="" set ^"in=%#EOL%
 		^^!value^^!						%= out[1]        =%%#EOL%
@@ -456,7 +456,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@ARRAY.DEFINE [var:args]
+:.autotest.@ARRAY.DEFINE [var:args]
 	setlocal EnableDelayedExpansion
 	set "array=arr"
 	set "size=4"
@@ -493,7 +493,7 @@ set "%%@.args="%#EOL%
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@ARRAY.DELETE [var:args]
+:.autotest.@ARRAY.DELETE [var:args]
 	setlocal EnableDelayedExpansion
 	set "array=arr"
 
@@ -548,7 +548,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@ARRAY.GET [var:args]
+:.autotest.@ARRAY.GET [var:args]
 	setlocal EnableDelayedExpansion
 	set "array=arr"
 	set "idx=2"
@@ -601,7 +601,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@ARRAY.SET [var:args]
+:.autotest.@ARRAY.SET [var:args]
 	setlocal EnableDelayedExpansion
 	set "array=arr"
 	set "idx=-1"
@@ -636,7 +636,7 @@ for %%@ in (@ARRAY.FOREACH) do 2>nul set ^"%%@=for %%v in ($$) do for /L %%i in 
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="do " (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@ARRAY.FOREACH [var:args]
+:.autotest.@ARRAY.FOREACH [var:args]
 	setlocal EnableDelayedExpansion
 	set "array=arr"
 
@@ -689,7 +689,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@ARRAY.CONTAINS [var:args]
+:.autotest.@ARRAY.CONTAINS [var:args]
 	setlocal EnableDelayedExpansion
 	set "array=arr"
 	set "idxv=idx"
@@ -745,7 +745,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@ARRAY.APPEND [var:args]
+:.autotest.@ARRAY.APPEND [var:args]
 	setlocal EnableDelayedExpansion
 	set "array=arr"
 	set "vals="literal2" ref2"
@@ -813,7 +813,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@ARRAY.INSERT [var:args]
+:.autotest.@ARRAY.INSERT [var:args]
 	setlocal EnableDelayedExpansion
 	set "array=arr"
 	set "idx=4"
@@ -882,7 +882,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@ARRAY.REMOVE [var:args]
+:.autotest.@ARRAY.REMOVE [var:args]
 	setlocal EnableDelayedExpansion
 	set "array=arr"
 	set "idxs=-1"
@@ -909,7 +909,6 @@ goto :continue
 ::==============================================================================
 :::.%@STRING<dot>CONCAT%   {var:out} {var|"str":sep} {/keepempty|""} [var|"str"] [var|"str"] ...
 :::
-:: ^<nul set /P "%%@.out=!%%@.out!"%#EOL%
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@STRING.CONCAT) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 ( %#EOL%
 %------------------------------------------------------------------------% %#EOL%
@@ -939,7 +938,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@STRING.CONCAT [var:args]
+:.autotest.@STRING.CONCAT [var:args]
 	setlocal EnableDelayedExpansion
 	set "out="
 	set "sep=<>"
@@ -992,7 +991,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@STRING.SPLIT [var:args]
+:.autotest.@STRING.SPLIT [var:args]
 	setlocal EnableDelayedExpansion
 	set @STRING.SPLIT
 	set "str=this is a string"
@@ -1024,7 +1023,7 @@ for %%@ in (@STRING.LOWER) do 2>nul set ^"%%@=for %%v in ($$) do if defined %%v 
 && (setlocal EnableDelayedExpansion & if not "!%%@:~-2,-1!"=="^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@STRING.LOWER [var:args]
+:.autotest.@STRING.LOWER [var:args]
 	setlocal EnableDelayedExpansion
 	set "str=thIs IS A StrinG"
 
@@ -1063,7 +1062,7 @@ for %%@ in (@#STRING.LENGTH) do 2>nul set ^"%%@=for /f "tokens=1-2 delims=, " %%
 set ^"@STRING.LENGTH=%@#STRING.LENGTH%"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:test.@STRING.LENGTH [var:args]
+:.autotest.@STRING.LENGTH [var:args]
 	setlocal EnableDelayedExpansion
 	set "in=EighteenCharacters"
 	set "out="
@@ -1140,7 +1139,7 @@ goto :info.macro
 	call "!file!" /list "!find!"
 	exit /b 1
 :info.macro
-	if defined manbat call "!manbat!" "!file!" "/exc:{head} /exc:autogoto /inc:@ /inc:!find:@=!"
+	if defined manbat call "!manbat!" "!file!" "/exc:{head} /exc:autogoto /exc:autotest /inc:@ /inc:!find:@=!"
 	exit /b 1
 %=========================  END .autogoto.?  ========================%  goto :EOF
 
@@ -1148,53 +1147,48 @@ goto :info.macro
 
 %====================================================================%  goto :EOF
 :.autogoto.test name [args]    Runs built-in unit tests.
-::  Runs tests for macros.
-::  Returns:
-::    ERRORLEVEL    0 if all tests were successful, 1 if tests failed.
-::
+setlocal DisableDelayedExpansion
 set "div==================================================="
+set "file=%~f0"
+set "n0=%~n0"
+set "nx0=%~nx0"
+set "tests=%~2"
+set ^"args=%3 %4 %5 %6 %7 %8 %9^"
+if defined tests (set "quiet=") else set "quiet=>nul"
+if defined tests (set "printdef=echo(!div!!LF!%%T=!%%T!!LF!!div!") else set "printdef="
 
 :: Import macro definitions from this file
-setlocal DisableDelayedExpansion
-call "%~f0" /import || (2>&1 echo One or more macros failed to import.& exit /b 1)
+call "%file%" /import || (2>&1 echo One or more macros failed to import.& exit /b 1)
 setlocal EnableDelayedExpansion
 
-:: Use "reflection" to build a list of macros
-set "macros=%~2"
-:: if not "%~2"=="" cls
-:: for /f tokens^=1*^ delims^=^=^ eol^= %%v in ('"set %~n0 | findstr /B /L /C:%~n0"') do if "%~2"=="" (
-:: 	set "macros=!macros! %%v"
-:: ) else if "%%v"=="%~2" (
-:: 	echo !LF!!div!
-:: 	set %%v
-:: 	echo !div!
-:: 	set "macros=!macros! %%v"
-:: ) else if "%%v"=="%~n0.%~2" (
-:: 	echo !LF!!div!
-:: 	set %%v
-:: 	echo !div!
-:: 	set "macros=!macros! %%v"
-:: )
-:: if "!macros!"=="" (2>&1 echo No macros available, or invalid macro specified.& exit /b 1)
+:: Scan this file for autotest labels
+if not defined tests (
+	echo !div!!LF!!nx0!: Scanning for tests...
+	for /f "tokens=1" %%l in ('findstr /BLIC:":.autotest." "!file!"') do (
+		set "label=%%l" & echo   Found label: [!label!]
+		set "tests=!tests! !label::.autotest.=!"
+	)
+)
 
 :: Run tests
-set /A "num_tests=0"
-set /A "num_success=0"
-set ^"args=%3 %4 %5 %6 %7 %8 %9^"
-for %%v in (!macros!) do (
+echo !LF!!nx0!: Running tests...
+set /A "num_tests=0,num_success=0"
+for %%T in (!tests!) do (
+	%printdef%
 	set /A "num_tests+=1"
-	echo !LF!---^> Test !num_tests!: %%v!LF!!div!
-	call :test.%%v args && (
+	%quiet% echo !LF!---^> Test !num_tests! ^(%%T^):
+	%quiet% call :.autotest.%%T args && (
 		set /A "num_success+=1"
-		echo !div!!LF!---^> Test !num_tests!: SUCCESS
+		%quiet% echo !div!!LF!
+		        echo ---^> Test !num_tests!%tab%%%T%tab%%tab%SUCCESS
 	) || (
-		echo !div!!LF!---^> Test !num_tests!: FAILED
+		%quiet% echo !div!!LF!
+		        echo ---^> Test !num_tests!%tab%%%T%tab%%tab%FAILED
 	)
 )
 
 :: Print results
-echo !LF!!div!
-echo %~nx0: !num_success!/!num_tests! tests passed.!LF!
+echo !LF!!div!!LF!!nx0!: !num_success!/!num_tests! tests passed.!LF!
 if "!num_tests!"=="!num_success!" (exit /b 0) else exit /b 1
 %=======================  END .autogoto.test  =======================%  goto :EOF
 
