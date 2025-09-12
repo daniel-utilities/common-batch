@@ -321,6 +321,7 @@ set ^"SUBS.CLEANUP=%#EOL%
     "<pct>=%%"                  %= Unescape special characters          =%%#EOL%
     "<sp>= "                    %=                                      =%%#EOL%
     "<tab>=%TAB%"               %=                                      =%%#EOL%
+    "<dot>=."                   %=                                      =%%#EOL%
     "\>>=>"                     %= Unescape '<' and '>'                 =%%#EOL%
     "<<\=<"                     %=                                      =%%#EOL%
 "
@@ -803,7 +804,7 @@ NOT A COMMENT: This line should not be displayed.
 
 :::.TEST_3.Sub1.Sub2  New section with 0 lines.
 :.TEST_4..Sub2_2 New section with 0 lines.
-:::.TEST_5 New section with 4 lines.
+:::.%TEST_5% New section with 4 lines.
 :::  <<fullpath>>=[<fullpath>]
 :::  <<basename>>=[<basename>]
 :::  <<basename_no_ext>>=[<basename_no_ext>]

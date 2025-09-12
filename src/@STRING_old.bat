@@ -2,7 +2,7 @@
 setlocal DisableDelayedExpansion
 set ^"LF=^
 %= EMPTY LINE =%
-^" 
+^"
 set    ^"#LF=^^^%LF%%LF%^%LF%%LF%^"
 set   ^"#EOL=^^^%LF%%LF%^"          %= User provides the missing LF when expanding this at the end of a macro line =%
 set   ^"##LF=^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^"
@@ -11,13 +11,16 @@ set  ^"###LF=^^^^^^^^^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^^^^^^^%LF%%LF%
 set ^"###EOL=^^^^^^^^^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^"
 
 :: Special characters
-::  ((for /L %%a in (1,1,70) do pause>nul) & set /p "TAB=")<"%COMSPEC%"
-::  set "TAB=%TAB:~0,1%"
-::  for /f %%a in ('copy /Z %COMSPEC% nul') do set "CR=%%a"
-::  for /f "tokens=1 delims=#" %%a in ('"prompt #$H# & echo on & for %%b in (1) do rem"') do set "BS=%%a"
-::  set "BS=%BS:~0,1%"
-::  for /f %%a in ('cls') do set "FF=%%a"
-::  for /f %%a in ('forfiles /m "%~nx0" /c "cmd /c echo 0x1B"') do set "ESC=%%a"
+:: !LF!  --> Linefeed        (ASCII code 10; 0x0A)
+:: !TAB! --> Tab             (ASCII code  9; 0x09)
+:: !CR!  --> Carriage Return (ASCII code 13, 0x0D)
+:: !FF!  --> Form Feed       (ASCII code 12; 0x0C)
+:: !BS!  --> Backspace       (ASCII code  8; 0x08)
+:: !ESC! --> Escape          (ASCII code 27; 0x1B)
+:: (for %%v in (CR FF BS ESC) do set "%%v=") & for /f "tokens=1-3 delims= " %%1 in ('"@echo off & copy /Z %COMSPEC% nul & cls & prompt $H$S$E & echo on & for %%# in (1) do rem"') do if not defined CR (set "CR=%%1") else if not defined FF (set "FF=%%1") else if not defined BS (set "BS=%%1" & set "ESC=%%3")
+:: ((for /L %%# in (1,1,70) do pause>nul) & set /p "TAB=")<"%COMSPEC%"
+:: set "TAB=%TAB:~0,1%"
+
 
 ::.@STRING.PRINT          (Embeddable, Expandable in DDE)
 ::  Print the contents of a variable, without the usual linefeed.

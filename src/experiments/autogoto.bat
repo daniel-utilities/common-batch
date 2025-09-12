@@ -9,22 +9,22 @@
 :::
 :::  Place the following code at top of script to enable autogoto functionality:
 :::
-:::    @echo off & goto :.autogoto.%1 1>nul 2>nul ||(setlocal DisableDelayedExpansion&echo(&echo(Usage^:&echo(&(for /F tokens^=^1^*^ delims^=:.^ eol^= %%A in ('findstr /R /C:"^:\.autogoto\." "%~f0"') do echo(  %~nx0 %%B)&echo(&(for /F "tokens=1* delims=?" %%A in ("%~1") do if not "%~1"=="%%A" (call man.bat "%~f0" "/exc:autogoto" %2 %3 %4 %5 %6 %7 %8 %9 2>nul&exit /b 1)))
+:::    @echo off & for /f "tokens=1-3 delims=/-" %%1 in (".autogoto./%1") do (if "%%3"=="" (goto :%%1%%2) else goto) 2>nul || (%=Usage Info=% setlocal DisableDelayedExpansion&echo.&echo Usage:&echo.&(for /F "tokens=1* delims=:." %%A in ('findstr /RIC:"^:\.autogoto\.\ " "%~f0"') do echo   %~nx0  %%B)&(for /F "tokens=1* delims=:." %%A in ('findstr /RIC:"^:\.autogoto\.[^\ ]" "%~f0"') do echo   %~nx0 /%%B)&endlocal)
 :::
-:::
-:::.Details:
+:::..Details:
 :::
 :::  Jumps immediately to a label corresponding to the first argument --flag.
 :::  Define new labels using the syntax:
 :::
-:::    :.autogoto.--[flag]               Description text
-:::    :.autogoto./[flag]                [alternative form]
+:::    :.autogoto.[flag]               Description text
 :::    (your code here)
 :::    exit /b [ERRORLEVEL]
 :::
 :::  Then the script will jump to this label if called as:
 :::
+:::    script.bat /[flag]
 :::    script.bat --[flag]
+:::    script.bat [flag]
 :::
 :::  The default (no argument) flag can be defined as:
 :::
@@ -38,7 +38,7 @@
 :::     Uses "man.bat" to print each line starting with ":::".
 :::
 :::
-:::.Methodology:
+:::..Methodology:
 :::
 :::  The following labels are defined in autogoto.bat:
 :::    :.autogoto.--flag      (Normal flag)
@@ -53,7 +53,7 @@
 :::    Block 4:  runs if the script was not automatically terminated.
 :::
 :::
-:::.Results:
+:::..Results:
 :::                 Example                  Blocks Traversed
 :::  Type           Usage                    1   2   3   4
 :::-----------------------------------------------------------
@@ -66,49 +66,48 @@
 :::  When GOTO fails to find a matching label, its script is terminated after
 :::    completing the code block containing GOTO.
 :::  This gives us time to print usage info before termination.
-:::  If the label contains the character "?", GOTO fails, but does NOT terminate
-:::    the script automatically; must detect this condition and exit manually.
+:::  If the label contains the sequence "/?", GOTO fails, but does NOT terminate
+:::    the script automatically.
 :::
 
 @echo off
 cls
-    %= Attempt to jump to first argument =%
-echo(
-echo(  AUTOGOTO.BAT^: running: "goto :.autogoto.%1"
-echo(
-goto :.autogoto.%1 1>nul 2>nul && (
-    %= Script was called with a valid flag =%
-    echo(  AUTOGOTO.BAT^: Now in Block 2   ^(goto returned SUCCESS^)
-) || (
+echo.
+%= Attempt to jump to first argument =%
+%= Removes '/' and '-' from the beginning of arg 1 =%
+%= Removes from the middle as well, but a flag with / in the middle is invalid anyway =%
+for /f "tokens=1-3 delims=/-" %%1 in (".autogoto./%1") do (if "%%3"=="" (goto :%%1%%2) else goto) 2>nul || (
     %= Script was called with an invalid flag =%
-    echo(  AUTOGOTO.BAT^: Now in Block 3   ^(goto returned FAILURE^)
-    setlocal DisableDelayedExpansion
-    echo(&echo(Usage^:&echo(&(for /F tokens^=^1^*^ delims^=:.^ eol^= %%A in ('findstr /R /C:"^:\.autogoto\." "%~f0"') do echo(  %~nx0 %%B)&echo(
+    echo   AUTOGOTO.BAT^: Now in Block 3   ^(goto returned FAILURE^)
+    %= Print Usage Info =%
+    (setlocal DisableDelayedExpansion&echo Usage:&echo.&(for /F "tokens=1* delims=:." %%A in ('findstr /RIC:"^:\.autogoto\.\ " "%~f0"') do echo   %~nx0  %%B)&(for /F "tokens=1* delims=:." %%A in ('findstr /RIC:"^:\.autogoto\.[^\ ]" "%~f0"') do echo   %~nx0 /%%B)&endlocal)
 )
-    %= Script was called with the help flag =%
-echo(  AUTOGOTO.BAT^: Now in Block 4   ^(script was not automatically terminated^)
-call man.bat "%~f0" "/exc:autogoto" %2 %3 %4 %5 %6 %7 %8 %9 2>nul
+echo   AUTOGOTO.BAT^: Now in Block 4   ^(script was not automatically terminated^)
+
+
+%=====================================================================% goto :EOF
+:.autogoto.                  No arguments provided
+echo(  AUTOGOTO.BAT^: Now in Block 1 ^(No arguments provided^).
+echo(  Exiting...
+exit /b 0
+
+%=====================================================================% goto :EOF
+:.autogoto.flag              Normal flag
+echo(  AUTOGOTO.BAT^: Now in Block 1 ^(Normal Flag^).
+echo(  Exiting...
+exit /b 0
+
+
+%=====================================================================% goto :EOF
+:.autogoto.? [keyword]       Help flag
+echo(  AUTOGOTO.BAT^: Now in Block 1 ^(Help Flag^).
+%= Print Usage Info =%
+setlocal DisableDelayedExpansion
+call "%~f0" invalid/flag
+
+%= Print Detailed Info =%
+man.bat "%~f0" "%~2 /exc:.autogoto." 2>nul
+echo(  Exiting...
 exit /b 1
 
-
-%=====================================================================% goto :EOF
-:.autogoto.--flag               Normal flag
-:.autogoto./flag                Normal flag
-echo(  AUTOGOTO.BAT^: Now in Block 1 ^(Jumped to label :.autogoto.%1^)
-echo(  AUTOGOTO.BAT^: Exiting...
-exit /b 0
-
-
-%=====================================================================% goto :EOF
-:.autogoto./? [keyword]         Help flag
-echo(  AUTOGOTO.BAT^: Now in Block 1 ^(Jumped to label :.autogoto.%1^)
-echo(  AUTOGOTO.BAT^: Exiting...
-exit /b 0
-
-
-%=====================================================================% goto :EOF
-:.autogoto.                     No arguments provided
-echo(  AUTOGOTO.BAT^: Now in Block 1 ^(Jumped to label :.autogoto.%1^)
-echo(  AUTOGOTO.BAT^: Exiting...
-exit /b 0
 

@@ -1,218 +1,245 @@
-::.SUMMARY.Usage:
-::  <basename> ARGS
-::
-::
-::  For a list of all macros in this file, use:
-::    man.bat "<fullpath>" "<basename_no_ext>. !help"
-::
-::  For help with a specific macro, use:
-::    man.bat "<fullpath>" ".MACRONAME"
-::
 ::==============================================================================
 ::  @MACRO.bat
 ::==============================================================================
 :::.Summary:
+:::  Template macro library.
 :::
-:::  Simple description text.
+:::..Loading and Using Macros:
+:::  Run  <basename> /list  for a list of available macros.
 :::
-:::.Details:
+:::    :: Load macros
+:::    setlocal DisableDelayedExpansion
+:::    call "path\to\<basename>" /import || exit /b 1
 :::
-:::  Detailed description text.
+:::    :: Use macros
+:::    setlocal EnableDelayedExpansion
+:::    %<basename_no_ext>.NAME% [arg1] [arg2] ...
+:::
+:::..What is a macro?
+:::  Batchfile "Macros" are regular variables containing executable code,
+:::  which executes upon expansion.
+:::
+:::  Macros can accept arguments, modify variables, run programs, and
+:::  use 'for' and 'if', but they cannot use 'call' or percent-expansion.
+:::  Their purpose is portability and performance. It is often easier to
+:::  source a macro library (such as this one) than to maintain a function
+:::  and its dependencies within a script. Moreover, macros are typically
+:::  an order of magnitude faster than the equivalent function, since they
+:::  are already loaded into memory.
+:::
+:::  Macros are defined in DDE mode (`setlocal DisableDelayedExpansion`)
+:::  because they contain many special characters which would otherwise need
+:::  lengthy escape sequences.
+:::
+:::  Macro expansion requires EDE mode (`setlocal EnableDelayedExpansion`),
+:::  because code is parsed after %%-expansion and before !!-expansion.
 :::
 ::==============================================================================
-@echo off & goto :.autogoto.%1 1>nul 2>nul ||(setlocal DisableDelayedExpansion&echo(&echo(Usage^:&echo(&(for /F tokens^=^1^*^ delims^=:.^ eol^= %%A in ('findstr /R /C:"^:\.autogoto\." "%~f0"') do echo(  %~nx0 %%B)&echo(&(for /F "tokens=1* delims=?" %%A in ("%~1") do if not "%~1"=="%%A" (call man.bat "%~f0" "/exc:autogoto /exc:detail" %2 %3 %4 %5 %6 %7 %8 %9 2>nul&exit /b 1)))
-
-
+@echo off & for /f "tokens=1-3 delims=/-" %%1 in (".autogoto./%1") do (if "%%3"=="" (goto :%%1%%2) else goto) 2>nul || (%=Usage Info=% setlocal DisableDelayedExpansion&echo.&echo Usage:&echo.&(for /F "tokens=1* delims=:." %%A in ('findstr /RIC:"^:\.autogoto\.[^\ ]" "%~f0"') do echo   %~nx0 /%%B)&endlocal)
 
 
 
 %====================================================================%  goto :EOF
-:.autogoto./import [verify=true]            Import all macros into the current scope.
+:.autogoto.import              Import macros into the current scope.
 
-if "!!"=="" call :throw "Macro definition requires DisableDelayedExpansion."
-
-set "@MACRO.PREFIX=%~n0"            %= Macro names should be prefixed with this to identify what file they came from.     =%
-set "ns=%@MACRO.PREFIX%.local"      %= Macro-local variable names should be prefixed with this.                           =%
-set "@MACRO.NAME="                  %= Macro names should be formatted as @MACRO.PREFIX.[NAME]                            =%
-set "@MACRO.VERIFY="                %= If defined, a marker is placed at the end of each macro for verification purposes. =%
-if /I "%~2"=="verify" if /I "%~3"=="true" set "@MACRO.VERIFY=!@MACRO.VERIFY!"
-
-%= List of temp variables to clear before returning to caller. =%
-set "@MACRO.TMPV=@MACRO.PREFIX ns @MACRO.NAME @MACRO.VERIFY @MACRO.TMPV"
-
-::==============================================================================
-:: Constants used in macro definitions
+if "!!"=="" 2>&1 echo ERROR: Macro definition requires DisableDelayedExpansion.& exit /b 1
 
 set ^"LF=^
-%= EMPTY LINE IS MANDATORY HERE =%
+%= EMPTY LINE =%
 ^"
+set "TAB=	"
+if defined #LF goto :continue
 set    ^"#LF=^^^%LF%%LF%^%LF%%LF%^"                           %= Percent-Expands to a single LF in DDE =%
 set   ^"#EOL=^^^%LF%%LF%^"                                    %= User provides the missing LF when expanding this at the end of a macro line =%
 set   ^"##LF=^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^"   %= Produces a single LF after two percent-expansions in DDE =%
 set  ^"##EOL=^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^"
 set  ^"###LF=^^^^^^^^^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^"
 set ^"###EOL=^^^^^^^^^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^"
+:continue
 
-if not defined TAB ((for /L %%a in (1,1,70) do pause>nul) & set /p "TAB=")<"%COMSPEC%"
-set "TAB=%TAB:~0,1%"
 
-set "TRUE=0"
-set "FALSE=1"
-set "EDE=EnableDelayedExpansion"
-set "DDE=DisableDelayedExpansion"
+::==============================================================================
+:::.%@MACRO<dot>EXAMPLE<dot>1% {str:arg1} {str:arg2} {str:arg3} [str:arg4]...
+:::  Example macro definition.
+:::
+:::  Consumes a space-separated list of arguments placed after the macro.
+:::  Internally, assigns the first three to metavariables %1, %2, %3, and the
+:::  remainder to %4.
+:::  Limitations:
+:::  - for /f fails if arg1-arg3 contain whitespace, even within quotes.
+:::  - for    fails if arg4 contains '?' or '*'.
+:::
+::-------- BEGIN MACRO DEFINITION ----------------------------------------------
+for %%@ in (@MACRO.EXAMPLE.1) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 ( %#EOL%
+%------------------------------------------------------------------------% %#EOL%
+%- SECTION 2  Macro Body                                                -% %#EOL%
+echo(--^^^> %%@: Entering Section 1%#EOL%
+for /f "tokens=1-3*" %%1 in ("!%%@.args!") do ( %#EOL%
+	echo(      {arg1}=[%%~1]%#EOL%
+	echo(      {arg2}=[%%~2]%#EOL%
+	echo(      {arg3}=[%%~3]%#EOL%
+	set "%%@.args[#]=3" %#EOL%
+	for %%a in (%%4) do (%#EOL%
+		set /A "%%@.args[#]+=1"%#EOL%
+		echo(      [arg!%%@.args[#]!]=[%%~a]%#EOL%
+	) %#EOL%
+)%#EOL%
+for %%v in (args args[#]) do set "%%@.%%v=" %= Cleanup local variables =% %#EOL%
+echo(--^^^> %%@: Leaving Section 1%#EOL%
+%------------------------------------------------------------------------% %#EOL%
+%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
+&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+::-------- END MACRO DEFINITION ------------------------------------------------
+goto :continue
+:test.@MACRO.EXAMPLE.1 [var:args]
+	setlocal EnableDelayedExpansion
+	set "args=!%~1!" & if "!args: =!"=="" set "args=value1 "value2" "" "optional 1" "optional 2""
+	echo(Executing:!LF!  %%@MACRO.EXAMPLE.1%% !args!
+	echo(!LF!Macro Output:!LF!vvvvvvvvvvvvvvvvvvvv
+	%@MACRO.EXAMPLE.1% !args!
+	echo(^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	exit /b 0
+:continue
+::==============================================================================
 
 
 
 ::==============================================================================
-set "@MACRO.NAME=%@MACRO.PREFIX%.EXAMPLE"
-:::.%<basename_no_ext>.EXAMPLE%  arg1 [arg2] ...
-:::  Brief macro summary
+:::.%@MACRO<dot>EXAMPLE<dot>2:$$={var:arg1}% ( ... )
+:::  Example macro definition.
 :::
-:::..Detail.
-:::  Detailed macro summary
+:::  Short macros may execute more quickly if their arguments are substituted
+:::  directly into the code at runtime.
+:::  Since we no longer need to list arguments after the macro, the macro may
+:::  instead be provided a code block to execute using 'for' or 'if'.
 :::
-set ^"%@MACRO.NAME%=for %%# in (1 3 2 1) do if %%#==1 ( %#EOL%
+::-------- BEGIN MACRO DEFINITION ----------------------------------------------
+for %%@ in (@MACRO.EXAMPLE.2) do 2>nul set ^"%%@=for %%# in (1 2 3) do if %%#==1 ( %#EOL%
 %------------------------------------------------------------------------% %#EOL%
-%- SECTION 1  Clear Locals                                              -% %#EOL%
-for %%V in (%= List of macro-local variables to clear =%%#EOL%
-params params[#] !%ns%.params! %#EOL%
-) do set "%ns%.%%V=" %#EOL%
+%- SECTION 1  Before External Code Block                                -% %#EOL%
+echo(--^^^> %%@: Entering Section 1%#EOL%
+set "%%@.args=$$" %= Runtime substitution ends up here =% %#EOL%
+echo(--^^^> %%@: Leaving Section 1%#EOL%
 %------------------------------------------------------------------------% %#EOL%
-%- SECTION 2  Macro body                              -%) else if %%#==2 ( %#EOL%
-echo ==== Inside macro %@MACRO.NAME%... ==== %#EOL%
-set "%ns%.params[#]=0" %#EOL%
-for %%A in (!%ns%.params!) do (%#EOL%
-  if !%ns%.params[#]!==0 set "%ns%.params=params params[#]" %#EOL%
-  set /A "%ns%.params[#]+=1" %#EOL%
-  set "%ns%.params[!%ns%.params[#]!]=%%A" %#EOL%
-) %#EOL%
-for /L %%i in (1,1,!%ns%.params[#]!) do (%#EOL%
-  echo   Param %%i=[!%ns%.params[%%i]!] %#EOL%
-) %#EOL%
-echo ==== Leaving macro %@MACRO.NAME%... ==== %#EOL%
+%- SECTION 3  After External Code Block              -% ) else if %%#==3 ( %#EOL%
+echo(--^^^> %%@: Entering Section 2%#EOL%
+for %%v in (args) do set "%%@.%%v=" %= Cleanup local variables =% %#EOL%
+echo(--^^^> %%@: Leaving Section 2%#EOL%
 %------------------------------------------------------------------------% %#EOL%
-%- SECTION 3  Input macro parameters   -% ) else set %ns%.params=%@MACRO.VERIFY%"
+%- SECTION 2  Execute External Code Block -% ) else for %%a in (!%%@.args!) do^"^
+&& (setlocal EnableDelayedExpansion & if not "!%%@:~-2!"=="do" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+::-------- END MACRO DEFINITION ------------------------------------------------
+goto :continue
+:test.@MACRO.EXAMPLE.2 [var:args]
+	setlocal EnableDelayedExpansion
+	set "args=!%~1!" & if "!args: =!"=="" set "args=value1 "value2" "" "optional 1" "optional 2""
+	echo(Executing:!LF!  %%@MACRO.EXAMPLE.2:$$=^^!args^^!%% ^( ... ^)
+	echo(!LF!Macro Output:!LF!vvvvvvvvvvvvvvvvvvvv
+	%@MACRO.EXAMPLE.2:$$=!args!% ( echo(  arg=[%%a])
+	echo(^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	exit /b 0
+:continue
+::==============================================================================
 
 
-if defined @MACRO.VERIFY call :macro_verify %@MACRO.NAME% @MACRO.VERIFY || (
-  set "errmsg=Macro %@MACRO.NAME% has an invalid definition:!LF!%@MACRO.NAME%=[!%@MACRO.NAME%!]!LF!"
-  call :throw errmsg
-)
 
-goto :__skip_test
-:__test_EXAMPLE
-echo HERE
+
+set "IMPORTS=%IMPORTS% %~n0"
 exit /b 0
-:__skip_test
-
-goto :__exit_success
-
-%------------------------------------------------------------------------------%
-:__exit_success
-set "IMPORTS=%@MACRO.PREFIX% %IMPORTS%"
-for %%V in (%@MACRO.TMPV%) do set "%%V="
-exit /b 0
-:__exit_failure
-call :throw "Import %@MACRO.PREFIX% failed."
-for %%V in (%@MACRO.TMPV%) do set "%%V="
-exit /b 1
-%======================  END .autogoto./import  =====================%  goto :EOF
+%======================  END .autogoto.import  ======================%  goto :EOF
 
 
 
 %====================================================================%  goto :EOF
-:.autogoto./test name [args]                Runs built-in unit tests.
-::  Runs tests for <basename> macros.
+:.autogoto.list                Lists available macros.
+setlocal DisableDelayedExpansion
+echo.
+echo For more info on a particular definition, use:
+echo   %~nx0 /? [macro]
+echo.
+echo Available macros:
+echo.
+:: This is just a massively stripped-down version of man.bat
+for /F tokens^=^*^ delims^=:.^ eol^= %%l in ('findstr /RIC:"^:::\..*%%%~n0" "%~f0"') do (
+	setlocal EnableDelayedExpansion
+	set "line=%%l"
+	set "line=!line:<basename>=%~nx0!"
+	set "line=!line:<basename_no_ext>=%~n0!"
+	set "line=!line:<dot>=.!"
+	set "line=!line:<pct>=%%!"
+	echo   !line!
+	endlocal
+)
+echo.
+exit /b 0
+%========================  END .autogoto.list =======================%  goto :EOF
+
+
+
+%====================================================================%  goto :EOF
+:.autogoto.? [macro]           Prints detailed documentation.
+setlocal DisableDelayedExpansion
+if "%~2"=="" (
+	call "%~f0" print/usage
+	man.bat "%~f0" "Summary"
+) else (
+	man.bat "%~f0" "%~2 /exc:Summary /exc:.autogoto."
+)
+exit /b 1
+%=========================  END .autogoto.?  ========================%  goto :EOF
+
+
+
+%====================================================================%  goto :EOF
+:.autogoto.test name [args]    Runs built-in unit tests.
+::  Runs tests for macros.
 ::  Returns:
 ::    ERRORLEVEL    0 if all tests were successful, 1 if tests failed.
 ::
+set "div==================================================="
+
+:: Import macro definitions from this file
 setlocal DisableDelayedExpansion
-call "%~f0" /import || ( echo ERROR: Failed to import macros from %~nx0. 1>&2 & goto :__exit_failure )
-set ^"NS=%~n0.TEST^"
-set ^"tests=%~2^" & if not defined tests set "tests=EXAMPLE"
-shift & shift
-set ^"args=%1 %2 %3 %4 %5 %6 %7 %8 %9^"
+call "%~f0" /import || (2>&1 echo One or more macros failed to import.& exit /b 1)
+setlocal EnableDelayedExpansion
+
+:: Use "reflection" to build a list of macros
+set "macros="
+if not "%~2"=="" cls
+for /f tokens^=1*^ delims^=^=^ eol^= %%v in ('"set %~n0 | findstr /B /L /C:%~n0"') do if "%~2"=="" (
+	set "macros=!macros! %%v"
+) else if "%%v"=="%~2" (
+	echo !LF!!div!
+	set %%v
+	echo !div!
+	set "macros=!macros! %%v"
+) else if "%%v"=="%~n0.%~2" (
+	echo !LF!!div!
+	set %%v
+	echo !div!
+	set "macros=!macros! %%v"
+)
+if "!macros!"=="" (2>&1 echo No macros available, or invalid macro specified.& exit /b 1)
+
+:: Run tests
 set /A "num_tests=0"
 set /A "num_success=0"
-for %%T in (%tests%) do (
-    if not defined %NS%.%%T (
-        echo ERROR: Test %NS%.%%T is not defined. 1>&2
-    ) else (
-        set /A "num_tests+=1"
-        call
-    )
+set ^"args=%3 %4 %5 %6 %7 %8 %9^"
+for %%v in (!macros!) do (
+	set /A "num_tests+=1"
+	echo !LF!---^> Test !num_tests!: %%v!LF!!div!
+	call :test.%%v args && (
+		set /A "num_success+=1"
+		echo !div!!LF!---^> Test !num_tests!: SUCCESS
+	) || (
+		echo !div!!LF!---^> Test !num_tests!: FAILED
+	)
 )
-if defined testname
-:: if not defined args set "args=abc !TRUE! "!FALSE!" & ^ "%TAB%de f"  /ghi -jkl=mno --pqr="st  u" %TAB%"" """"  /?  "
-echo Running test %NS%.%testname% with args %args%
 
-exit /b 0
-set @MACRO.EXAMPLE
-setlocal EnableDelayedExpansion
-echo =======================================================
-echo Calling Macro:
-echo %%@MACRO.EXAMPLE%% !args!
-echo.
-%@MACRO.EXAMPLE% %args%
-endlocal & set "EXITCODE=%ERRORLEVEL%"
-if not "%EXITCODE%"=="0" goto :__exit_failure
-
-%------------------------------------------------------------------------------%
-:__exit_success
-exit /b 0
-:__exit_failure
-exit /b 1
-%=======================  END .autogoto./test  ======================%  goto :EOF
+:: Print results
+echo !LF!!div!
+echo %~nx0: !num_success!/!num_tests! tests passed.!LF!
+if "!num_tests!"=="!num_success!" (exit /b 0) else exit /b 1
+%=======================  END .autogoto.test  =======================%  goto :EOF
 
 
-
-%====================================================================%  goto :EOF
-:.autogoto./? [macro]                       Prints detailed documentation.
-:: This section is inaccessible but included to provide the "/?" help text.
-%=========================  END .autogoto./?  =======================%  goto :EOF
-
-
-::==============================================================================
-:macro_verify MACRO ENDMARKER
-::
-::
-::
-  setlocal EnableDelayedExpansion
-  if "%~1"==""               exit /b 1
-  if not defined %~1         exit /b 1
-  if not "!%~1:*%~2=!"=="^!" exit /b 1
-  exit /b 0
-
-
-::==============================================================================
-:throw "Error message"|msg_var [ERRORLEVEL]
-::
-::   Prints an error message, returns to the caller, calls :exit ERRORLEVEL
-::
-    setlocal DisableDelayedExpansion & set "ERRORLEVEL=%ERRORLEVEL%"
-    set ^"throw.msgv=%1"
-    set "throw.msg=%~1"
-    setlocal EnableDelayedExpansion
-    if defined throw.msgv if "!throw.msgv!"=="!throw.msg!" ( set "throw.msg=!%1!"
-    ) else set ^"throw.msg=!throw.msg:""="!"
-    if not defined throw.msg set "throw.msg=ERROR: A critical error has occurred."
-    if not "%~2"=="" ( set "ERRORLEVEL=%~2"
-    ) else if "!ERRORLEVEL!"=="0" set "ERRORLEVEL=1"
-    (goto) 2>nul & (
-        setlocal DisableDelayedExpansion & call echo(  --[ %%~nx0 ]-- 1>&2 & endlocal
-        setlocal EnableDelayedExpansion  &      echo(%throw.msg%      1>&2 & endlocal !
-        call :exit %ERRORLEVEL%
-    )
-
-
-
-::==============================================================================
-:exit [ERRORLEVEL]
-::
-::   Runs exit /b ERRORLEVEL from the caller's context.
-::
-    setlocal DisableDelayedExpansion & set "ERRORLEVEL=%ERRORLEVEL%"
-    if not "%~1"=="" set "ERRORLEVEL=%~1"
-    (goto) 2>nul & (
-        exit /b %ERRORLEVEL%
-    )

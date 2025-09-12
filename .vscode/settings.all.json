@@ -8,15 +8,20 @@
 
     "files.eol": "\n",
     "files.encoding": "utf8",
+
     "[bat]": {
         "files.encoding": "cp437",
         "files.eol": "\r\n",
-        "editor.renderWhitespace": "boundary"
+        "editor.renderWhitespace": "boundary",
+        "editor.detectIndentation": false,
+        "editor.insertSpaces": false
     },
     "[cmd]": {
         "files.encoding": "cp437",
         "files.eol": "\r\n",
-        "editor.renderWhitespace": "boundary"
+        "editor.renderWhitespace": "boundary",
+        "editor.detectIndentation": false,
+        "editor.insertSpaces": false
     },
     "[inf]": {
         "files.encoding": "utf16le",
