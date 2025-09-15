@@ -132,38 +132,64 @@
 :::......Undefine an array:
 :::    %@ARRAY.DELETE% arr
 :::
+:::
+:::..{category}.@ASSERT   Macros for testing and debugging
+:::
+:::..{category}.@CONSTS   Macros which define various special constants
+:::
+:::..{category}.@PRINT    Macros for echoing values
+:::
+:::..{category}.@PROC     Macros for managing processes
+:::
+:::..{category}.@REG      Macros for reading and writing the Registry
+:::
 :::..{category}.@STRING   Macros for string manipulation
 :::
 ::==============================================================================
 
-@echo off & for /f "tokens=1-3 delims=/-" %%1 in (".autogoto./%1") do (if "%%3"=="" (goto :%%1%%2) else goto) 2>nul || (%=Usage Info=% setlocal DisableDelayedExpansion&echo.&echo Usage:&echo.&(for /F "tokens=1* delims=:." %%A in ('findstr /RIC:"^:\.autogoto\.[^\ ]" "%~f0"') do echo   %~nx0 /%%B)&endlocal)
+@echo off & for /f "tokens=1-3 delims=/-" %%1 in (".autogoto./%1") do (if "%%3"=="" (shift /1&goto :%%1%%2) else goto) 2>nul || (%=Usage Info=% setlocal DisableDelayedExpansion&echo.&echo Usage:&echo.&(for /F "tokens=1* delims=:." %%A in ('findstr /RIC:"^:\.autogoto\.[^\ ]" "%~f0"') do echo   %~nx0 /%%B)&endlocal)
 
 
 
 %====================================================================%  goto :EOF
 :.autogoto.import              Import macros into the current scope.
 
-if "!!"=="" 2>&1 echo ERROR: Macro definition requires DisableDelayedExpansion.& exit /b 1
 
+if "!!"=="" 1>&2 echo(---^> Error in [%~nx0]: Macro definition requires DisableDelayedExpansion.& exit /b 1
+
+
+
+
+:: Special Characters
+::   !LF!  --> Linefeed        (ASCII code 10; 0x0A) (requires EDE)
+::   !TAB! --> Tab             (ASCII code  9; 0x09)
 set ^"LF=^
 %= EMPTY LINE =%
 ^"
 set "TAB=	"
-if defined #LF goto :continue
-set    ^"#LF=^^^%LF%%LF%^%LF%%LF%^"                           %= Percent-Expands to a single LF in DDE =%
+:: ((for /L %%# in (1,1,70) do pause>nul) & set /p "TAB=")<"%COMSPEC%"
+:: set "TAB=%TAB:~0,1%"
+
+
+
+
+:: Embeddable Constants
+::   %#LF%    Percent-expands to a linefeed character in DDE.
+::   %#EOL%   Percent-expands to a linefeed character at the end of a line in a multiline string definition.
+set    ^"#LF=^^^%LF%%LF%^%LF%%LF%^"                           %= Produces a single LF after percent-expandsion in DDE =%
 set   ^"#EOL=^^^%LF%%LF%^"                                    %= User provides the missing LF when expanding this at the end of a macro line =%
 set   ^"##LF=^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^"   %= Produces a single LF after two percent-expansions in DDE =%
 set  ^"##EOL=^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^"
 set  ^"###LF=^^^^^^^^^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^"
 set ^"###EOL=^^^^^^^^^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^"
-:continue
+
 
 
 
 
 ::==============================================================================
 :::.%@ARGS<dot>SPLIT%      [var:in] [var:out] [str:extra_carets] [var:sep]
-:::.%@#ARGS<dot>SPLIT%     [var:in] [var:out] [str:extra_carets] [var:sep] (Embeddable)
+:::.%#@ARGS<dot>SPLIT%     [var:in] [var:out] [str:extra_carets] [var:sep] (Embeddable)
 :::
 :::  Quote-aware string split. For each unquoted string of whitespace in [in],
 :::    replaces that string with [sep].
@@ -186,74 +212,88 @@ set ^"###EOL=^^^^^^^^^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^^^^^^^%LF%%LF%
 :::   - Literal " should be escaped as "" within a "quoted block".
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@#ARGS.SPLIT) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%##EOL%
-%------------------------------------------------------------------------% %##EOL%
-%- SECTION 2  Macro Body                                                -% %##EOL%
-for /f "tokens=1-4" %%1 in ("!%%@.args!") do if not "%%~1"=="" for /f "tokens=1" %%2 in ("%%~2 %%~1") do for %%L in (^^^^^^^"%###LF%^^^^^^^") do ( %##EOL%
-	set "%%@.in=!%%~1!" %##EOL%
-	set "%%2=" %##EOL%
-	if not "!%%@.in!"=="" ( %##EOL%
-		set "%%@.in=!%%@.in:#=#p!"					%= 1. Escape # first so future steps can use # as a marker =% %##EOL%
-		set "%%@.in=!%%@.in:%%~L=#l!"				%= 2. Remove linefeeds or Step 5, 7 will fail =% %##EOL%
-		set ^"%%@.in=!%%@.in:"=#q!^"				%= 3. Remove quotes or step 5, 7, 8 will sometimes fail =% %##EOL%
-		set "%%@.in=!%%@.in:^=#c^^!"				%= 4. Escape carets to survive percent-expansion. Place a marker before each caret so we can easly do more escaping later on. =% %##EOL%
-		call set "%%@.in=%%!=!%%@.in:^!=#e^!%%" 	%= 5. Need to escape exclamations, so must use percent-expansion, but cannot set the correct escape sequence with 'call set', so just mark where the exclamations are for now.=% %##EOL%
-		set "%%@.in=!%%@.in:#e=#c^!"!				%= 6. Escape exclamations to survive percent-expansion. Place a marker before each exclamation so we can easily do more escaping later on. =% %##EOL%
-		set "%%@.numq=0" %##EOL%
-		for /f tokens^^^^=*^^^^ delims^^^^=^^^^ eol^^^^= %%T in ("!%%@.in:#q=#q%%~L!") do ( %= 7. Split on doublequotes. For each quoted block... =% %##EOL%
-			set /A "%%@.numq=(%%@.numq+1) %% 2"		%= Alternates btw 1 (outside quotes) and 0 (inside quotes) =% %##EOL%
-			set "%%@.tok=%%T"!						%= 8. Collect the quoted block. Requires percent expansion, but all weird characters are gone or escaped now =% %##EOL%
-			if !%%@.numq!==1 if not "!%%@.tok!"=="" (%= 9. Outside quotes, replace each block of whitespace with [sep] =% %##EOL%
-				set "%%@.tok=!%%@.tok: =" "!"		%=    Mark (quote) before and after each whitespace char =% %##EOL%
-				set "%%@.tok=!%%@.tok:%TAB%=" "!" %##EOL%
-				set "%%@.tok=!%%@.tok:#l=" "!" %##EOL%
-				set "%%@.tok=!%%@.tok:""=!"			%=    Combine consecutive marks. Now only remaining marks are at beginning and end of whitespace blocks. =% %##EOL%
-				set "%%@.tok=!%%@.tok: =!"			%=    Remove whitespace, bringing the start+end marks together. =% %##EOL%
-				set "%%@.tok=!%%@.tok:""=#s!"		%=    Replace what was once a whitespace block with a single [sep]. =% %##EOL%
-			)										%= 9. Inside quotes, do nothing, keep whitespace intact =% %##EOL%
-			set "%%2=!%%2!!%%@.tok!"				%=10. Append to output =% %##EOL%
-		) %##EOL%
-		if "!%%2:~,2!"=="#s" set "%%2=!%%2:~2!"		%= 11. Trim leading and trailing [sep] =% %##EOL%
-		if "!%%2:~-2!"=="#s" set "%%2=!%%2:~,-2!" %##EOL%
-		if "%%~4"=="" (set "%%2=!%%2:#s=%%~L!") else for %%L in ("!%%~4!") do set "%%2=!%%2:#s=%%~L!" %##EOL%
-		set "%%2=!%%2:#c=%%~3!" %##EOL%
-		set ^"%%2=!%%2:#q="!^" %##EOL%
-		set "%%2=!%%2:#l=%%~L!" %##EOL%
-		set "%%2=!%%2:#p=#!" %##EOL%
-	) %##EOL%
+for %%@ in (#@ARGS.SPLIT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined ###LF (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ###LF.& exit /b 1
+) else if not defined ##EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ##EOL.& exit /b 1
+) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%##EOL%
+%----------------------------------------------------------------------% %##EOL%
+%- SECTION 2  Macro Body                                              -% %##EOL%
+for /f "tokens=1-4" %%1 in ("!%%@.args!") do if not "%%~1"=="" for /f "tokens=1" %%2 in ("%%~2 %%~1") do for %%L in (^^^^^^^"%###LF%^^^^^^^") do (%##EOL%
+	set "%%@.in=!%%~1!"%##EOL%
+	set "%%2="%##EOL%
+	if defined %%@.in (%##EOL%
+		set "%%@.in=!%%@.in:#=#m!"%=                    1. Escape # with '#m' first, so future steps can use '#{char}' as a marker. =%%##EOL%
+		set "%%@.in=!%%@.in:%%~L=#l!"%=                 2. Remove linefeeds or Step 5, 7 will fail =%%##EOL%
+		set ^^^^^"%%@.in=!%%@.in:"=#q!^"%=              3. Remove doublequotes or step 5, 7, 8 will sometimes fail =%%##EOL%
+		set "%%@.in=!%%@.in:^=#c^^!"%=                  4. Escape carets to survive percent-expansion. Keep a caret marker '#c' before each caret.=%%##EOL%
+		call set "%%@.in=%%!=!%%@.in:^!=#e^!%%"%=       5. Need to escape exclm, so must use percent-expansion, but cannot set the correct escape sequence with 'call set', so just mark where the exclamations are with '#e'. =%%##EOL%
+		set "%%@.in=!%%@.in:#e=#c^!"!%=                 6. Escape exclm by replacing '#e'. Keep a caret marker '#c' before each exclm so we dont have to use call set again. =%%##EOL%
+		set "%%@.numq=0"%=                              7. Split on doublequotes. For each quoted block...=%%##EOL%
+		for /f tokens^^^^=*^^^^ delims^^^^=^^^^ eol^^^^= %%T in ("!%%@.in:#q=#q%%~L!") do (%##EOL%
+			set /A "%%@.numq=(%%@.numq+1) %% 2"%=          ... numq alternates btw 1 (outside quotes) and 0 (inside quotes) =%%##EOL%
+			set "%%@.tok=%%T"!%=                        8. Collect the quoted block. Requires percent expansion, but all weird characters are gone or escaped now. =%%##EOL%
+			if !%%@.numq!==1 if not "!%%@.tok!"=="" (%= 9. Outside quotes. Replace each block of consecutive whitespace characters with a single sep marker '#s'.=%%##EOL%
+				set "%%@.tok=!%%@.tok: =#s#x#s!"%=           Mark each character for removal with '#x', and place separator mark '#s' before and after '#x'.=%%##EOL%
+				set "%%@.tok=!%%@.tok:%TAB%=#s#x#s!"%##EOL%
+				set "%%@.tok=!%%@.tok:#l=#s#x#s!"%##EOL%
+				set "%%@.tok=!%%@.tok:#s#s=!"%=              Remove consecutive separators '#s'. Now the only remaining '#s' are at before and after each block of '#x'. =%%##EOL%
+				set "%%@.tok=!%%@.tok:#x=!"%=                Remove all '#x', bringing the leading and trailing '#s' marks together. =%%##EOL%
+				set "%%@.tok=!%%@.tok:#s#s=#s!"%=            Each '#s#s' was once a block of consecutive whitespace characters. =%%##EOL%
+			)%=                                         9. Inside quotes. Do nothing, keep whitespace intact =%%##EOL%
+			set "%%2=!%%2!!%%@.tok!"%=                 10. Append to output. =%%##EOL%
+		)%##EOL%
+		if "!%%2:~,2!"=="#s" set "%%2=!%%2:~2!"%=      11. Trim leading '#s' =%%##EOL%
+		if "!%%2:~-2!"=="#s" set "%%2=!%%2:~,-2!"%=        Trim trailing '#s' =%%##EOL%
+		if defined %%2 if "%%~4"=="" (set "%%2=!%%2:#s=%%~L!") else for %%S in ("!%%~4!") do set "%%2=!%%2:#s=%%~S!"!%= 12. Sub '#s' with [sep] =%%##EOL%
+		if defined %%2 set "%%2=!%%2:#c=%%~3!"%=       13. Sub '#c' with [extra_carets] =%%##EOL%
+		if defined %%2 set ^^^^^"%%2=!%%2:#q="!^"%=    14. Restore original quotes, linefeeds, '#' =%%##EOL%
+		if defined %%2 set "%%2=!%%2:#l=%%~L!"%##EOL%
+		if defined %%2 set "%%2=!%%2:#m=#!"%##EOL%
+	)%##EOL%
 ) %##EOL%
 %= Cleanup local variables =% %##EOL%
 set "%%@.args="%##EOL%
 set "%%@.in="%##EOL%
 set "%%@.tok="%##EOL%
 set "%%@.numq="%##EOL%
-%------------------------------------------------------------------------% %##EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
-set ^"@ARGS.SPLIT=%@#ARGS.SPLIT%"
+%----------------------------------------------------------------------% %##EOL%
+%- SECTION 1  Collect Macro Arguments                -%) else set %%@.args=!=!^"
+set ^"@ARGS.SPLIT=%#@ARGS.SPLIT%"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARGS.SPLIT [var:args]
+:.autotest.@ARGS.SPLIT [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=in out !carets! !sep!"
 	setlocal EnableDelayedExpansion
-	set "in=!%~1!" & if "!in: =!"=="" set ^"in=%#EOL%
-		item1 "item 2"		%#EOL%
-		"item=""^^3^^"""	%#EOL%
-		item4="!LF!"		%#EOL%
-							%#EOL%
-		"%%item6%%"			%#EOL%
-		"^!item7^!"			%#EOL%
-	^"
-	set "out="
-	set "carets=^"
-	set "sep=#LF"
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 
-	echo in=[!in!]
-	echo.
-	echo Executing:!LF!  %%@ARGS.SPLIT%% in out !carets! !sep!
-	%@ARGS.SPLIT% in out !carets! !sep!
-	echo.
-	echo out=[!out!]
-	echo.
+	set ^"in=%#EOL%
+%==%	item1 "item 2"  	%#EOL%
+%==%	"item=""^^3^^"""	%#EOL%
+%==%	item4="!LF!"    	%#EOL%
+%==%						%#EOL%
+%==%	"%%item6%%"     	%#EOL%
+%==%	"^!item7^!"     	%#EOL%
+	^"
+	set out=
+	set carets="#c"
+	set sep=#LF
+	set "out.expected=item1!%sep%!"item 2"!%sep%!"item=""#c^^^^3#c^^^^"""!%sep%!item4="!LF!"!%sep%!"%%item6%%"!%sep%!"#c^^!item7#c^^!""
+
+	echo(!LF!Before:
+	for %%v in (in) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
+
+	echo(!LF!Result:
+	%@ASSERT.EQU:$$=out,out.expected% || exit /b 1
 	exit /b 0
 :continue
 ::==============================================================================
@@ -334,17 +374,20 @@ goto :continue
 :::      if not "!args:args[?]=!"=="!args!" ( %= flag was specified =% )
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@ARGS.PARSE) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
-%------------------------------------------------------------------------% %#EOL%
-%- SECTION 2  Macro Body                                                -% %#EOL%
+for %%@ in (@ARGS.PARSE) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else if not defined #@ARGS.SPLIT (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #@ARGS.SPLIT.& exit /b 1
+) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 2  Macro Body                                               -% %#EOL%
 for /f "tokens=1-4" %%1 in ("!%%@.args!") do if not "%%~1"=="" for /f "tokens=1" %%2 in ("%%~2 %%~1") do for %%L in (^^^"%##LF%^^^") do ( %#EOL%
 	set "%%@.in=!%%~1!"%#EOL%
 	for %%v in (!%%2!) do set "%%v="%#EOL%
 	set "%%2="%#EOL%
 	set "%%2.npos=0"%#EOL%
 	if defined %%@.in ( %#EOL%
-		set "%%@.in=!%%@.in:#=#p!"%= Escape '#' so next line can use '#c' as a marker =%%#EOL%
-		%@#ARGS.SPLIT% %%@.in %%@.in "#c^^^^^^^"%= Produces a linefeed-separated list of arguments, with enough extra carets to survive 2x percent expansion in EDE, and '#c' markers for more carets later on =%%#EOL%
+		set "%%@.in=!%%@.in:#=#m!"%= Escape '#' so next line can use '#c' as a marker =%%#EOL%
+		%#@ARGS.SPLIT% %%@.in %%@.in "#c^^^^^^^"%= Produces a linefeed-separated list of arguments, with enough extra carets to survive 2x percent expansion in EDE, and '#c' markers for more carets later on =%%#EOL%
 		for /f tokens^^=*^^ delims^^=^^=:^^ ^^%TAB%^^ eol^^= %%a in ("!%%@.in!") do (%= For each argument... =%%#EOL%
 			set "%%@.arg=%%a"!%= First Percent Expansion =%%#EOL%
 			if not "%%~5"=="" echo(--^^^> arg=[!%%@.arg!]%#EOL%
@@ -358,7 +401,7 @@ for /f "tokens=1-4" %%1 in ("!%%@.args!") do if not "%%~1"=="" for /f "tokens=1"
 					if "%%~4"=="" (set "%%@.val=%%~c") else set "%%@.val=%%c"!%= Second Percent Expansion =%%#EOL%
 					if defined %%@.val if "%%~4"=="" set ^"%%@.val=!%%@.val:""="!"%= Remove one layer of quotes =%%#EOL%
 					if defined %%@.val set "%%@.val=!%%@.val:#c=%%~3!"%#EOL%
-					if defined %%@.val set "%%@.val=!%%@.val:#p=#!"%#EOL%
+					if defined %%@.val set "%%@.val=!%%@.val:#m=#!"%#EOL%
 					set "%%2[%%b]=!%%@.val!"%= Store value =%%#EOL%
 					if not "%%~5"=="" echo(    flg=[%%b]^&echo(    val=[!%%@.val!]%#EOL%
 				)%#EOL%
@@ -370,14 +413,22 @@ for /f "tokens=1-4" %%1 in ("!%%@.args!") do if not "%%~1"=="" for /f "tokens=1"
 set "%%@.args="%#EOL%
 set "%%@.in="%#EOL%
 set "%%@.val="%#EOL%
-%------------------------------------------------------------------------% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARGS.PARSE [var:args]
+:.autotest.@ARGS.PARSE [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=in out !extra_carets! !preserve_quotes! !debug!"
 	setlocal EnableDelayedExpansion
-	set "in=!%~1!" & if "!in: =!"=="" set ^"in=%#EOL%
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+
+	set ^"in=%#EOL%
 		^^!value^^!						%= out[1]        =%%#EOL%
 		"val ""^!with^!"" spaces"		%= out[2]        =%%#EOL%
 		=weird" "positional				%= out[3]        =%%#EOL%
@@ -397,17 +448,35 @@ goto :continue
 		:								%= invalid       =%%#EOL%
 	^"
 	set "out="
-	set "extra_carets=#c"
-	::set "preserve_quotes=/preserve-quotes"
+	set "extra_carets="#c""
+	set "preserve_quotes=/preserve-quotes"
 	set "debug=/debug"
 
-	echo in=[!in!]
-	echo.
-	echo Executing:!LF!  %%@ARGS.SPLIT%% in out "!extra_carets!" "!preserve_quotes!" "!debug!"
-	%@ARGS.PARSE% in out "!extra_carets!" "!preserve_quotes!" "!debug!"
-	echo.
+	echo(!LF!Before:
+	for %%v in (in) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
+
+	echo(!LF!Result:
 	for /f "delims=" %%v in ("out.npos!LF!!out!") do echo(%%v=[!%%v!]
+
 	echo.
+	set "expected=5"                               & %@ASSERT.EQU:$$=out.npos,expected% || exit /b 1
+	set "expected=#c^!value#c^!"                   & %@ASSERT.EQU:$$=out[1],expected% || exit /b 1
+	set "expected="val ""#c^^!with#c^^!"" spaces"" & %@ASSERT.EQU:$$=out[2],expected% || exit /b 1
+	set "expected=weird" "positional"              & %@ASSERT.EQU:$$=out[3],expected% || exit /b 1
+	set "expected="""                              & %@ASSERT.EQU:$$=out[4],expected% || exit /b 1
+	set "expected="override 5""                    & %@ASSERT.EQU:$$=out[5],expected% || exit /b 1
+	set "expected=value"                           & %@ASSERT.EQU:$$=out[flg1],expected% || exit /b 1
+	set "expected="val ""#c^^!with#c^^!"" spaces"" & %@ASSERT.EQU:$$=out[flg2],expected% || exit /b 1
+	set "expected="                                & %@ASSERT.EQU:$$=out[flg3],expected% || exit /b 1
+	set "expected="                                & %@ASSERT.EQU:$$=out[flg4],expected% || exit /b 1
+	set "expected="""                              & %@ASSERT.EQU:$$=out[flg5],expected% || exit /b 1
+	set "expected="                                & %@ASSERT.EQU:$$=out["flag 6"],expected% || exit /b 1
+	set "expected="value""                         & %@ASSERT.EQU:$$=out["flag 7"],expected% || exit /b 1
+	set "expected="                                & %@ASSERT.EQU:$$=out[?],expected% || exit /b 1
 	exit /b 0
 :continue
 ::==============================================================================
@@ -423,51 +492,71 @@ goto :continue
 :::  The final size is max(size, num_vals).
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@ARRAY.DEFINE) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
-%========================================================================% %#EOL%
-%= SECTION 2  Macro Body                                                =% %#EOL%
-set "%%@.err="^&for /f "tokens=1-2* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
+for %%@ in (@ARRAY.DEFINE) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 2  Macro Body                                               -% %#EOL%
+set %%@.err=^&for /f "tokens=1-2* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
        if "%%~1"=="" (set %%@.err=1%#EOL%
 ) else if defined %%~1 (set %%@.err=1%#EOL%
-) else (%=                                   Define new array           =% %#EOL%
-	set "%%~1=%%~1 %%~1[#]" %=               Init var list              =% %#EOL%
-	set /A "%%~1[#]=0" %=                    Init array size            =% %#EOL%
-	for %%3 in (%%3) do ( %=                 Append values              =% %#EOL%
-		if %%3=="%%~3" (set "%%@.val=%%~3") else set "%%@.val=!%%3!"!%= Dereference unquoted value =% %#EOL%
-		set /A "%%~1[#]+=1" %=               Increment array size       =% %#EOL%
-		set "%%~1=!%%~1! %%~1[!%%~1[#]!]" %= Append name to var list    =% %#EOL%
-		set "%%~1[!%%~1[#]!]=!%%@.val!" %=   Store new value            =% %#EOL%
-	) %#EOL%
-	set /A "%%@.size=%%~2-1" %=              Expand array               =% %#EOL%
+) else (%=                                   Define new array           =%%#EOL%
+	set "%%~1=%%~1 %%~1[#]"%=                Init var list              =%%#EOL%
+	set /A "%%~1[#]=0"%=                     Init array size            =%%#EOL%
+	for %%3 in (%%3) do (%=                  Append values              =%%#EOL%
+		if %%3=="%%~3" (set "%%@.val=%%~3") else set "%%@.val=!%%3!"!%= Dereference unquoted value =%%#EOL%
+		set /A "%%~1[#]+=1"%=                Increment array size       =%%#EOL%
+		set "%%~1=!%%~1! %%~1[!%%~1[#]!]"%=  Append name to var list    =%%#EOL%
+		set "%%~1[!%%~1[#]!]=!%%@.val!"%=    Store new value            =%%#EOL%
+	)%#EOL%
+	set /A "%%@.size=%%~2-1"%=               Expand array               =%%#EOL%
 	for /L %%i in (!%%~1[#]!,1,!%%@.size!) do (%#EOL%
-		set /A "%%~1[#]+=1" %=               Increment array size       =% %#EOL%
-		set "%%~1=!%%~1! %%~1[!%%~1[#]!]" %= Append name to var list    =% %#EOL%
-		set "%%~1[!%%~1[#]!]=" %=            Store empty value          =% %#EOL%
-	) %#EOL%
-)) %#EOL%
+		set /A "%%~1[#]+=1"%=                Increment array size       =%%#EOL%
+		set "%%~1=!%%~1! %%~1[!%%~1[#]!]"%=  Append name to var list    =%%#EOL%
+		set "%%~1[!%%~1[#]!]="%=             Store empty value          =%%#EOL%
+	)%#EOL%
+))%#EOL%
 %= Cleanup local variables =% %#EOL%
 set "%%@.args="%#EOL%
 set "%%@.val="%#EOL%
 set "%%@.size="%#EOL%
 %= Return error if something went wrong =% %#EOL%
 if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
-%========================================================================% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.DEFINE [var:args]
+:.autotest.@ARRAY.DEFINE [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=array !size! !vals!"
 	setlocal EnableDelayedExpansion
-	set "array=arr"
-	set "size=4"
-	set "vals=!%~1!" & if "!vals: =!"=="" set "vals=ref1 "literal 1""
-	set "ref1=reference 1"
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 
-	echo(!LF!Executing:!LF!  %%@ARRAY.DEFINE%% !array! !size! !vals!
-	%@ARRAY.DEFINE% !array! !size! !vals!
+	for %%v in (array array[#] array[0] array[1] array[2] array[3] array[4] array[5]) do set "%%v="
+
+	set "size=4"
+	set "vals=ref1 "literal 1""
+	  set "ref1=ref 1"
+	  set "ref2=ref 2"
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
 
 	echo(!LF!Result:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
+	echo.
+	%@ASSERT.DEFINED:$$=array% || exit /b 1
+	set "expected=4"         & %@ASSERT.EQU:$$=array[#],expected% || exit /b 1
+	set "expected=!ref1!"    & %@ASSERT.EQU:$$=array[1],expected% || exit /b 1
+	set "expected=literal 1" & %@ASSERT.EQU:$$=array[2],expected% || exit /b 1
+	set "expected="          & %@ASSERT.EQU:$$=array[3],expected% || exit /b 1
+	set "expected="          & %@ASSERT.EQU:$$=array[4],expected% || exit /b 1
 	exit /b 0
 :continue
 ::==============================================================================
@@ -482,31 +571,48 @@ goto :continue
 :::  Undefines [array] and all its associated variables.
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@ARRAY.DELETE) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
-%========================================================================% %#EOL%
-%= SECTION 2  Macro Body                                                =% %#EOL%
-for %%a in (!%%@.args!) do for %%v in (!%%~a!) do set "%%v=" %#EOL%
+for %%@ in (@ARRAY.DELETE) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else  2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 2  Macro Body                                               =% %#EOL%
+for %%a in (!%%@.args!) do for %%v in (!%%~a!) do set "%%v="%#EOL%
 %= Cleanup local variables =% %#EOL%
 set "%%@.args="%#EOL%
-%========================================================================% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.DELETE [var:args]
+:.autotest.@ARRAY.DELETE [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=array"
 	setlocal EnableDelayedExpansion
-	set "array=arr"
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+	for %%v in (array array[#] array[0] array[1] array[2] array[3] array[4] array[5]) do set "%%v="
 
-	set "ref1=reference 1"
-	%@ARRAY.DEFINE% !array! 3 ref1 "literal 1"
-	echo(Array:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
+	echo(!LF!Before:
+	  set "ref1=ref 1"
+	  set "ref2=ref 2"
+	%@ARRAY.DEFINE% array 3 ref1 "literal 1"
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
 
-	echo(!LF!Executing:!LF!  %%@ARRAY.DELETE%% !array!
-	%@ARRAY.DELETE% !array!
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
 
 	echo(!LF!Result:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
+	echo.
+	%@ASSERT.UNDEFINED:$$=array% || exit /b 1
+	%@ASSERT.UNDEFINED:$$=array[#]% || exit /b 1
+	%@ASSERT.UNDEFINED:$$=array[1]% || exit /b 1
+	%@ASSERT.UNDEFINED:$$=array[2]% || exit /b 1
+	%@ASSERT.UNDEFINED:$$=array[3]% || exit /b 1
 	exit /b 0
 :continue
 ::==============================================================================
@@ -527,10 +633,12 @@ goto :continue
 :::  See src/examples/ex_inline_conditionals.bat for more details.
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@ARRAY.GET) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 ( %#EOL%
-%========================================================================% %#EOL%
-%= SECTION 2  Macro Body                                                =% %#EOL%
-set "%%@.err="^&for /f "tokens=1-3 delims=[]= " %%1 in ("!%%@.args!") do ( %#EOL%
+for %%@ in (@ARRAY.GET) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else  2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 2  Macro Body                                               =% %#EOL%
+set %%@.err=^&for /f "tokens=1-3 delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
        if "%%~1"=="" (set %%@.err=1%#EOL%
 ) else if "%%~3"=="" (set %%@.err=1%#EOL%
 ) else if not defined %%~1 (set %%@.err=1%#EOL%
@@ -543,28 +651,37 @@ set "%%@.args="%#EOL%
 set "%%@.idx="%#EOL%
 %= Return error if something went wrong =% %#EOL%
 if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
-%========================================================================% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 1  Collect Macro Arguments               =% ) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.GET [var:args]
+:.autotest.@ARRAY.GET [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=array !idx! out"
 	setlocal EnableDelayedExpansion
-	set "array=arr"
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+	for %%v in (array array[#] array[0] array[1] array[2] array[3] array[4] array[5]) do set "%%v="
+
+	echo(!LF!Before:
+	  set "ref1=ref 1"
+	  set "ref2=ref 2"
+	%@ARRAY.DEFINE% array 3 ref1 "literal 1"
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
 	set "idx=2"
-	set "var=out"
 
-	set "ref1=reference 1"
-	%@ARRAY.DEFINE% !array! 3 ref1 "literal 1"
-	echo(Array:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
-
-	set "!var!="
-	echo(!LF!Executing:!LF!  %%@ARRAY.GET%% !array! !idx! !var!
-	%@ARRAY.GET% !array! !idx! !var!
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
 
 	echo(!LF!Result:
-	if defined !var! (for %%v in (!var!) do echo(  %%v=[!%%v!]) else echo   !var! is undefined.
+	for %%v in (out) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	echo.
+	set "expected=literal 1" & %@ASSERT.EQU:$$=out,expected% || exit /b 1
 	exit /b 0
 :continue
 ::==============================================================================
@@ -578,10 +695,12 @@ goto :continue
 :::  Supports negative indices; -1 indexs the last element.
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@ARRAY.SET) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 ( %#EOL%
-%========================================================================% %#EOL%
-%= SECTION 2  Macro Body                                                =% %#EOL%
-set "%%@.err="^&for /f "tokens=1-2* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
+for %%@ in (@ARRAY.SET) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else  2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 2  Macro Body                                               =% %#EOL%
+set %%@.err=^&for /f "tokens=1-2* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
        if "%%~1"=="" (set %%@.err=1%#EOL%
 ) else if "%%3"=="" (set %%@.err=1%#EOL%
 ) else if not defined %%~1 (set %%@.err=1%#EOL%
@@ -596,27 +715,44 @@ set "%%@.idx="%#EOL%
 set "%%@.val="%#EOL%
 %= Return error if something went wrong =% %#EOL%
 if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
-%========================================================================% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.SET [var:args]
+:.autotest.@ARRAY.SET [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=array !idx! !val!"
 	setlocal EnableDelayedExpansion
-	set "array=arr"
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+
+	for %%v in (array array[#] array[0] array[1] array[2] array[3] array[4] array[5]) do set "%%v="
+
+	echo(!LF!Before:
+	  set "ref1=ref 1"
+	  set "ref2=ref 2"
+	%@ARRAY.DEFINE% array 3 ref1 "literal 1"
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
 	set "idx=-1"
 	set "val="new value""
 
-	set "ref1=reference 1"
-	%@ARRAY.DEFINE% !array! 3 ref1 "literal 1"
-	echo(Array:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
-
-	echo(!LF!Executing:!LF!  %%@ARRAY.SET%% !array! !idx! !val!
-	%@ARRAY.SET% !array! !idx! !val!
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
 
 	echo(!LF!Result:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
+	echo.
+	%@ASSERT.DEFINED:$$=array% || exit /b 1
+	set "expected=3"         & %@ASSERT.EQU:$$=array[#],expected% || exit /b 1
+	set "expected=!ref1!"    & %@ASSERT.EQU:$$=array[1],expected% || exit /b 1
+	set "expected=literal 1" & %@ASSERT.EQU:$$=array[2],expected% || exit /b 1
+	set "expected=new value" & %@ASSERT.EQU:$$=array[3],expected% || exit /b 1
+	set "expected="          & %@ASSERT.EQU:$$=array[4],expected% || exit /b 1
 	exit /b 0
 :continue
 ::==============================================================================
@@ -632,22 +768,32 @@ goto :continue
 :::               !%%v[%%i]!    --> The current element value.
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@ARRAY.FOREACH) do 2>nul set ^"%%@=for %%v in ($$) do for /L %%i in (1,1,!%%v[#]!) do ^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="do " (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+for %%@ in (@ARRAY.FOREACH) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else 2>nul set ^"%%@=for %%v in ($$) do for /L %%i in (1,1,!%%v[#]!) do ^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.FOREACH [var:args]
+:.autotest.@ARRAY.FOREACH [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=do "
+	set "params=array"
 	setlocal EnableDelayedExpansion
-	set "array=arr"
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 
-	set "ref1=reference 1"
-	%@ARRAY.DEFINE% !array! 3 ref1 "literal 1"
-	echo(Array:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
+	for %%v in (array array[#] array[0] array[1] array[2] array[3] array[4] array[5]) do set "%%v="
 
-	echo(!LF!Executing:!LF!  %%@ARRAY.FOREACH:$$=!array!%% ^( ... ^)
-	%@ARRAY.FOREACH:$$=!array!% ( echo(  %%v[%%i]=[!%%v[%%i]!])
-	echo(
+	echo(!LF!Before:
+	  set "ref1=ref 1"
+	  set "ref2=ref 2"
+	%@ARRAY.DEFINE% array 3 ref1 "literal 1"
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
+
+	echo(!LF!Executing:  %%%test%:$$=!params!%% ^( ... ^)
+	%@macro:$$=!params!% ( echo(  %%v[%%i]=[!%%v[%%i]!])
+
 	exit /b 0
 :continue
 ::==============================================================================
@@ -662,55 +808,77 @@ goto :continue
 :::  - If not found, sets ERRORLEVEL=1
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@ARRAY.CONTAINS) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 ( %#EOL%
-%========================================================================% %#EOL%
-%= SECTION 2  Macro Body                                                =% %#EOL%
+for %%@ in (@ARRAY.CONTAINS) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 2  Macro Body                                               =% %#EOL%
 set "%%@.err="^&for /f "tokens=1-2* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
        if "%%~1"=="" (set %%@.err=1%#EOL%
 ) else if "%%3"=="" (set %%@.err=1%#EOL%
 ) else if not defined %%~1 (set %%@.err=1%#EOL%
-) else for /f "tokens=1" %%2 in ("%%~2 %%@.idx") do (%= Ensure metavariable 2 is nonempty =% %#EOL%
+) else for /f "tokens=1" %%2 in ("%%~2 %%@.idx") do (%= Ensure loop var 2 is nonempty =%%#EOL%
 	if %%3=="%%~3" (set "%%@.val=%%~3") else set "%%@.val=!%%3!"%= Dereference unquoted value in metavariable 3 =%%#EOL%
-	%= Search Array =% %#EOL%
+	%= Search Array =%%#EOL%
 	set "%%2="%#EOL%
-	for /L %%i in (1,1,!%%~1[#]!) do if not defined %%2 ( %#EOL%
+	for /L %%i in (1,1,!%%~1[#]!) do if not defined %%2 (%#EOL%
 		if "!%%~1[%%i]!"=="!%%@.val!" set "%%2=%%i"%#EOL%
-	) %#EOL%
+	)%#EOL%
 	if not defined %%2 set %%@.err=1%#EOL%
-)) %#EOL%
+))%#EOL%
 %= Cleanup local variables =% %#EOL%
 set "%%@.args="%#EOL%
 set "%%@.idx="%#EOL%
 set "%%@.val="%#EOL%
 %= Return error if value not found or if something else went wrong =% %#EOL%
 if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
-%========================================================================% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.CONTAINS [var:args]
+:.autotest.@ARRAY.CONTAINS [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=array idx !find!"
 	setlocal EnableDelayedExpansion
-	set "array=arr"
-	set "idxv=idx"
-	set "find1="
-	set "find2=reference 1"
-	set "find3=literal"
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 
-	set "ref1=reference 1"
-	%@ARRAY.DEFINE% !array! 3 ref1 "literal 1"
-	echo(Array:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
+	for %%v in (idx array array[#] array[0] array[1] array[2] array[3] array[4] array[5]) do set "%%v="
 
-	echo(!LF!Executing:!LF!  ^( %%@ARRAY.CONTAINS%% !array! !idxv! {find} ^) ...
-	for %%v in (!idxv!) do for %%f in (find1 find2 find3) do (
-		%@ARRAY.CONTAINS% !array! %%v %%f
-	) && (
-		echo(  %%f=[!%%f!] found at !array![!%%v!]
-	) || (
-		echo(  %%f=[!%%f!] not found in !array!
-	)
-	echo(
+	echo(!LF!Before:
+	  set "ref1=ref 1"
+	  set "ref2=ref 2"
+	%@ARRAY.DEFINE% array 3 ref1 "literal 1"
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
+
+	set "find=ref1"
+	echo(!LF!Executing:  ^( %%%test%%% %params% ^) ...
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
+	set "expected=1" & %@ASSERT.EQU:$$=idx,expected% || exit /b 1
+
+	set "find="ref1""
+	echo(!LF!Executing:  ^( %%%test%%% %params% ^) ...
+	%@macro% %params%
+	%@ASSERT.FAILURE% || exit /b 1
+	set "expected=" & %@ASSERT.EQU:$$=idx,expected% || exit /b 1
+
+	set "find="literal 1""
+	echo(!LF!Executing:  ^( %%%test%%% %params% ^) ...
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
+	set "expected=2" & %@ASSERT.EQU:$$=idx,expected% || exit /b 1
+
+	set "find="""
+	echo(!LF!Executing:  ^( %%%test%%% %params% ^) ...
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
+	set "expected=3" & %@ASSERT.EQU:$$=idx,expected% || exit /b 1
+
 	exit /b 0
 :continue
 ::==============================================================================
@@ -723,44 +891,65 @@ goto :continue
 :::  Appends new values to the end of the [array].
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@ARRAY.APPEND) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 ( %#EOL%
-%========================================================================% %#EOL%
-%= SECTION 2  Macro Body                                                =% %#EOL%
-set "%%@.err="^&for /f "tokens=1* delims=[]= " %%1 in ("!%%@.args!") do (  %#EOL%
+for %%@ in (@ARRAY.APPEND) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 2  Macro Body                                               =% %#EOL%
+set "%%@.err="^&for /f "tokens=1* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
        if "%%~1"=="" (set %%@.err=1%#EOL%
 ) else if not defined %%~1 (set %%@.err=1%#EOL%
 ) else for %%2 in (%%2) do (%= For each value =%%#EOL%
-	if %%2=="%%~2" (set "%%@.val=%%~2") else set "%%@.val=!%%2!"!%= Dereference unquoted value =% %#EOL%
-	set /A "%%~1[#]+=1" %=               Increment array size            =% %#EOL%
-	set "%%~1[!%%~1[#]!]=!%%@.val!" %=   Store value                     =% %#EOL%
-	set "%%~1=!%%~1! %%~1[!%%~1[#]!]" %= Append element name to var list =% %#EOL%
-)) %#EOL%
+	if %%2=="%%~2" (set "%%@.val=%%~2") else set "%%@.val=!%%2!"!%= Dereference unquoted value =%%#EOL%
+	set /A "%%~1[#]+=1"%=               Increment array size           =%%#EOL%
+	set "%%~1[!%%~1[#]!]=!%%@.val!"%=   Store value                    =%%#EOL%
+	set "%%~1=!%%~1! %%~1[!%%~1[#]!]"%= Append element name to var list=%%#EOL%
+))%#EOL%
 %= Cleanup local variables =% %#EOL%
 set "%%@.args="%#EOL%
 set "%%@.val="%#EOL%
 %= Return error if something went wrong =% %#EOL%
 if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
-%========================================================================% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.APPEND [var:args]
+:.autotest.@ARRAY.APPEND [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=array !vals!"
 	setlocal EnableDelayedExpansion
-	set "array=arr"
-	set "vals="literal2" ref2"
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 
-	set "ref1=reference 1"
-	set "ref2=reference 2"
-	%@ARRAY.DEFINE% !array! 3 ref1 "literal 1"
-	echo(Array:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
+	for %%v in (array array[#] array[0] array[1] array[2] array[3] array[4] array[5]) do set "%%v="
 
-	echo(!LF!Executing:!LF!  %%@ARRAY.APPEND%% !array! !vals!
-	%@ARRAY.APPEND% !array! !vals!
+	echo(!LF!Before:
+	  set "ref1=ref 1"
+	  set "ref2=ref 2"
+	%@ARRAY.DEFINE% array 3 ref1 "literal 1"
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
+
+	set "vals="literal 2" ref2"
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
 
 	echo(!LF!Result:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
+	echo.
+	%@ASSERT.DEFINED:$$=array% || exit /b 1
+	set "expected=5"         & %@ASSERT.EQU:$$=array[#],expected% || exit /b 1
+	set "expected=!ref1!"    & %@ASSERT.EQU:$$=array[1],expected% || exit /b 1
+	set "expected=literal 1" & %@ASSERT.EQU:$$=array[2],expected% || exit /b 1
+	set "expected="          & %@ASSERT.EQU:$$=array[3],expected% || exit /b 1
+	set "expected=literal 2" & %@ASSERT.EQU:$$=array[4],expected% || exit /b 1
+	set "expected=!ref2!"    & %@ASSERT.EQU:$$=array[5],expected% || exit /b 1
+	set "expected="          & %@ASSERT.EQU:$$=array[6],expected% || exit /b 1
 	exit /b 0
 :continue
 ::==============================================================================
@@ -777,30 +966,32 @@ goto :continue
 :::  - Supports negative indices; -1 indexes the last element.
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@ARRAY.INSERT) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 ( %#EOL%
-%========================================================================% %#EOL%
-%= SECTION 2  Macro Body                                                =% %#EOL%
+for %%@ in (@ARRAY.INSERT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 2  Macro Body                                               =% %#EOL%
 set "%%@.err="^&for /f "tokens=1-2* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
        if "%%~1"=="" (set %%@.err=1%#EOL%
 ) else if "%%3"=="" (set %%@.err=1%#EOL%
 ) else if not defined %%~1 (set %%@.err=1%#EOL%
 ) else set /A "%%~1[#]+=0,%%@.idx=((%%~2+0)*((%%~2+0)-(0!%%~1[#]!+1)-1)>>31&1)*(%%~2+0)+((%%~2+0)*((%%~2+0)+(0!%%~1[#]!)+1)>>31&1)*((%%~2+0)+(0!%%~1[#]!)+1)"^&if !%%@.idx!==0 (set %%@.err=1%= Check idx is in valid range and wrap it to a positive number =%%#EOL%
 ) else for %%2 in (!%%@.idx!) do (%#EOL%
-	%= Expand array to new size =% %#EOL%
-	set "%%@.old=!%%~1[#]!" %#EOL%
-	for %%3 in (%%3) do set /A "%%~1[#]+=1" ^& set "%%~1=!%%~1! %%~1[!%%~1[#]!]" %#EOL%
-	%= Shift every position GEQ idx by the [qty] of new items =% %#EOL%
-	for /L %%i in (!%%@.old!,-1,%%2) do ( %#EOL%
-		set /A "%%@.idx=%%i+!%%~1[#]!-!%%@.old!" %= Calculate new position     =% %#EOL%
-		set "%%~1[!%%@.idx!]=!%%~1[%%i]!" %=        Copy value to new position =% %#EOL%
-	) %#EOL%
-	%= Store new values starting at idx =% %#EOL%
+	%= Expand array to new size =%%#EOL%
+	set "%%@.old=!%%~1[#]!"%#EOL%
+	for %%3 in (%%3) do set /A "%%~1[#]+=1" ^& set "%%~1=!%%~1! %%~1[!%%~1[#]!]"%#EOL%
+	%= Shift every position GEQ idx by the [qty] of new items =%%#EOL%
+	for /L %%i in (!%%@.old!,-1,%%2) do (%#EOL%
+		set /A "%%@.idx=%%i+!%%~1[#]!-!%%@.old!"%= Calculate new position     =%%#EOL%
+		set "%%~1[!%%@.idx!]=!%%~1[%%i]!"%=        Copy value to new position =%%#EOL%
+	)%#EOL%
+	%= Store new values starting at idx =%%#EOL%
 	set "%%@.idx=%%2"^&for %%3 in (%%3) do (%#EOL%
 		if %%3=="%%~3" (set "%%@.val=%%~3") else set "%%@.val=!%%3!"%= Dereference unquoted value =%%#EOL%
 		set "%%~1[!%%@.idx!]=!%%@.val!"%= Set value at idx to value of 3 =%%#EOL%
-		set /A "%%@.idx+=1" %#EOL%
-	) %#EOL%
-)) %#EOL%
+		set /A "%%@.idx+=1"%#EOL%
+	)%#EOL%
+))%#EOL%
 %= Cleanup Local Variables =% %#EOL%
 set "%%@.args="%#EOL%
 set "%%@.old="%#EOL%
@@ -808,28 +999,47 @@ set "%%@.idx="%#EOL%
 set "%%@.val="%#EOL%
 %= Return error if something went wrong =% %#EOL%
 if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
-%========================================================================% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.INSERT [var:args]
+:.autotest.@ARRAY.INSERT [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=array !idx! !vals!"
 	setlocal EnableDelayedExpansion
-	set "array=arr"
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+
+	for %%v in (array array[#] array[0] array[1] array[2] array[3] array[4] array[5]) do set "%%v="
+
+	echo(!LF!Before:
+	  set "ref1=ref 1"
+	  set "ref2=ref 2"
+	%@ARRAY.DEFINE% array 3 ref1 "literal 1"
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
+
 	set "idx=4"
-	set "vals="literal2" ref2"
+	set "vals="literal 2" ref2"
 
-	set "ref1=reference 1"
-	set "ref2=reference 2"
-	%@ARRAY.DEFINE% !array! 3 ref1 "literal 1"
-	echo(Array:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
-
-	echo(!LF!Executing:!LF!  %%@ARRAY.INSERT%% !array! !idx! !vals!
-	%@ARRAY.INSERT% !array! !idx! !vals!
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
 
 	echo(!LF!Result:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
+	echo.
+	%@ASSERT.DEFINED:$$=array% || exit /b 1
+	set "expected=5"         & %@ASSERT.EQU:$$=array[#],expected% || exit /b 1
+	set "expected=!ref1!"    & %@ASSERT.EQU:$$=array[1],expected% || exit /b 1
+	set "expected=literal 1" & %@ASSERT.EQU:$$=array[2],expected% || exit /b 1
+	set "expected="          & %@ASSERT.EQU:$$=array[3],expected% || exit /b 1
+	set "expected=literal 2" & %@ASSERT.EQU:$$=array[4],expected% || exit /b 1
+	set "expected=!ref2!"    & %@ASSERT.EQU:$$=array[5],expected% || exit /b 1
+	set "expected="          & %@ASSERT.EQU:$$=array[6],expected% || exit /b 1
 	exit /b 0
 :continue
 ::==============================================================================
@@ -844,31 +1054,33 @@ goto :continue
 :::  Supports negative indices; -1 indexes last element.
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@ARRAY.REMOVE) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 ( %#EOL%
-%========================================================================% %#EOL%
-%= SECTION 2  Macro Body                                                =% %#EOL%
-set "%%@.err="^&for /f "tokens=1* delims=[]= " %%1 in ("!%%@.args!") do (  %#EOL%
+for %%@ in (@ARRAY.REMOVE) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 2  Macro Body                                               =% %#EOL%
+set "%%@.err="^&for /f "tokens=1* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
        if "%%~1"=="" (set %%@.err=1%#EOL%
 ) else if not defined %%~1 (set %%@.err=1%#EOL%
 ) else (%#EOL%
-	%= Prepare the list of indicies to remove                           =% %#EOL%
+	%= Prepare the list of indicies to remove                           =%%#EOL%
 	set "%%@.idxs=;" ^& for %%2 in (%%2) do (%#EOL%
 		set /A "%%~1[#]+=0,%%@.idx=((%%~2+0)*((%%~2+0)-(0!%%~1[#]!)-1)>>31&1)*(%%~2+0)+((%%~2+0)*((%%~2+0)+(0!%%~1[#]!)+1)>>31&1)*((%%~2+0)+(0!%%~1[#]!)+1)"^&if !%%@.idx!==0 (set %%@.err=1%= Check idx is in valid range and wrap it to a positive number =%%#EOL%
 		) else set "%%@.idxs=!%%@.idxs!!%%@.idx!;"%#EOL%
-	) %#EOL%
-	%= Rebuild array without the items at these positions               =% %#EOL%
-	set "%%~1=%%~1 %%~1[#]" %=                    Init var list         =% %#EOL%
-	set /A "%%@.oldsize=!%%~1[#]!,%%~1[#]=0" %=   Init array size       =% %#EOL%
-	for /L %%i in (1,1,!%%@.oldsize!) do ( %#EOL%
-		if "!%%@.idxs:;%%i;=!"=="!%%@.idxs!" ( %= Keep this index       =% %#EOL%
-			set /A "%%~1[#]+=1" %=                Increment array size  =% %#EOL%
-			set "%%~1=!%%~1! %%~1[!%%~1[#]!]" %=  Append name to varlist=% %#EOL%
-			set "%%~1[!%%~1[#]!]=!%%~1[%%i]!" %=  Store value           =% %#EOL%
-		) %#EOL%
-	) %#EOL%
-	%= Clear leftover values from the end of the old array              =% %#EOL%
+	)%#EOL%
+	%= Rebuild array without the items at these positions               =%%#EOL%
+	set "%%~1=%%~1 %%~1[#]"%=                    Init var list          =%%#EOL%
+	set /A "%%@.oldsize=!%%~1[#]!,%%~1[#]=0"%=   Init array size        =%%#EOL%
+	for /L %%i in (1,1,!%%@.oldsize!) do (%#EOL%
+		if "!%%@.idxs:;%%i;=!"=="!%%@.idxs!" (%= Keep this index        =%%#EOL%
+			set /A "%%~1[#]+=1"%=                Increment array size   =%%#EOL%
+			set "%%~1=!%%~1! %%~1[!%%~1[#]!]"%=  Append name to varlist =%%#EOL%
+			set "%%~1[!%%~1[#]!]=!%%~1[%%i]!"%=  Store value            =%%#EOL%
+		)%#EOL%
+	)%#EOL%
+	%= Clear leftover values from the end of the old array              =%%#EOL%
 	set /A "%%@.idx=!%%~1[#]!+1" %#EOL%
-	for /L %%i in (!%%@.idx!,1,!%%@.oldsize!) do set "%%~1[%%i]=" %#EOL%
+	for /L %%i in (!%%@.idx!,1,!%%@.oldsize!) do set "%%~1[%%i]="%#EOL%
 )) %#EOL%
 %= Cleanup Local Variables =% %#EOL%
 set "%%@.args="%#EOL%
@@ -877,136 +1089,44 @@ set "%%@.idxs="%#EOL%
 set "%%@.idx="%#EOL%
 %= Return error if something went wrong =% %#EOL%
 if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
-%========================================================================% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+%=---------------------------------------------------------------------=% %#EOL%
+%= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.REMOVE [var:args]
+:.autotest.@ARRAY.REMOVE [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=array !idxs!"
 	setlocal EnableDelayedExpansion
-	set "array=arr"
-	set "idxs=-1"
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 
-	set "ref1=reference 1"
-	set "ref2=reference 2"
-	%@ARRAY.DEFINE% !array! 3 ref1 "literal 1"
-	echo(Array:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
+	for %%v in (array array[#] array[0] array[1] array[2] array[3] array[4] array[5]) do set "%%v="
 
-	echo(!LF!Executing:!LF!  %%@ARRAY.REMOVE%% !array! !idxs!
-	%@ARRAY.REMOVE% !array! !idxs!
+	echo(!LF!Before:
+	  set "ref1=ref 1"
+	  set "ref2=ref 2"
+	%@ARRAY.DEFINE% array 5 ref1 "literal 1" "" ref2 "literal 2""
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
+
+	set "idxs=-1 4"
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
 
 	echo(!LF!Result:
-	if defined !array! (for %%a in (!array!) do for %%v in (!%%a!) do echo(  %%v=[!%%v!]) else echo   !array! is undefined.
-	exit /b 0
-:continue
-::==============================================================================
-
-
-
-
-
-::==============================================================================
-:::.%@STRING<dot>CONCAT%   {var:out} {var|"str":sep} {/keepempty|""} [var|"str"] [var|"str"] ...
-:::
-::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@STRING.CONCAT) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 ( %#EOL%
-%------------------------------------------------------------------------% %#EOL%
-%- SECTION 2  Macro Body                                                -% %#EOL%
-set "%%@.err="^&for /f "tokens=1-3* delims=	 " %%1 in ("!%%@.args!") do (%#EOL%
-       if "%%~1"=="" (set %%@.err=1%#EOL%
-) else if "%%2"=="" (set %%@.err=1%#EOL%
-) else ( %#EOL%
-	if %%2=="%%~2" (set "%%@.sep=%%~2") else set "%%@.sep=!%%2!"%= Dereference unquoted value =% %#EOL%
-	set "%%@.out=" %#EOL%
-	for %%4 in (%%4) do (%= Construct output string=% %#EOL%
-		if %%4=="%%~4" (set "%%@.val=%%~4") else set "%%@.val=!%%4!"%= Dereference unquoted value =%%#EOL%
-		if not "%%~3"=="" (       if defined %%@.out (set "%%@.out=!%%@.out!!%%@.sep!!%%@.val!") else set "%%@.out=!%%@.val!" %= /keepempty              =% %#EOL%
-		) else if defined %%@.val if defined %%@.out (set "%%@.out=!%%@.out!!%%@.sep!!%%@.val!") else set "%%@.out=!%%@.val!" %= keep nonempty (default) =% %#EOL%
-	) %#EOL%
-	set "%%~1=!%%@.out!" %= Store value =% %#EOL%
-)) %#EOL%
-%= Cleanup local variables =% %#EOL%
-set "%%@.args="%#EOL%
-set "%%@.out="%#EOL%
-set "%%@.sep="%#EOL%
-set "%%@.val="%#EOL%
-%= Return error if something went wrong =% %#EOL%
-if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
-%------------------------------------------------------------------------% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
-::-------- END MACRO DEFINITION ------------------------------------------------
-goto :continue
-:.autotest.@STRING.CONCAT [var:args]
-	setlocal EnableDelayedExpansion
-	set "out="
-	set "sep=<>"
-	set "vals=var1 "value 2" "" var2"
-		set "var1=value 1"
-		set "var2=value 3"
-
-	echo(Executing:!LF!  %%@STRING.CONCAT%% out "!sep!" /keepempty !vals!
-	%@STRING.CONCAT% out "!sep!" /keepempty !vals!
-	echo(
-
-	echo(Result:
-	for %%v in (out) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
-	exit /b 0
-:continue
-::==============================================================================
-
-
-
-
-
-::==============================================================================
-:::.%@STRING<dot>SPLIT%    {var:in} {var:out} {var|"str":sep}
-:::
-::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@STRING.SPLIT) do 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 ( %#EOL%
-%------------------------------------------------------------------------% %#EOL%
-%- SECTION 2  Macro Body                                                -% %#EOL%
-set "%%@.err="^&for /f "tokens=1-2*" %%1 in ("!%%@.args!") do (%#EOL%
-	       if "%%~1"=="" (set %%@.err=1%#EOL%
-	) else if "%%~2"=="" (set %%@.err=1%#EOL%
-	) else if "%%3"=="" (set %%@.err=1%#EOL%
-	) else if not defined %%~1 (set "%%~2="%#EOL%
-	) else for %%L in (^^^"%##LF%^^^") do (%#EOL%
-		if %%3=="%%~3" (set "%%@.sep=%%~3") else set "%%@.sep=!%%3!"%= Dereference unquoted value =% %#EOL%
-		set "%%~2=!%%~1:#=#p!"    ^& if defined %%@.sep set "%%@.sep:#=#p"%#EOL%
-		set "%%~2=!%%~2:%%~L=#l!" ^& if defined %%@.sep set "%%@.sep:%%~L=#l"%#EOL%
-		for /f tokens^^=*^^ delims^^=^^ eol^^= %%s in ("!%%@.sep!") do set "%%~2=!%%~2:%%~s=%%~L!"!%= Split happens here =%%#EOL%
-		set "%%~2=!%%~2:#l=%%~L!"%#EOL%
-		set "%%~2=!%%~2:#p=#!"%#EOL%
-	)%#EOL%
-) %#EOL%
-%= Cleanup local variables =% %#EOL%
-set "%%@.args="%#EOL%
-set "%%@.sep="%#EOL%
-%= Return error if something went wrong =% %#EOL%
-if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
-%------------------------------------------------------------------------% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-3!"=="^!=^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
-::-------- END MACRO DEFINITION ------------------------------------------------
-goto :continue
-:.autotest.@STRING.SPLIT [var:args]
-	setlocal EnableDelayedExpansion
-	set @STRING.SPLIT
-	set "str=this is a string"
-	set "sep=i"
-
-	echo(Input:
-	for %%v in (str) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
-	echo(
-
-	echo(Executing:!LF!  %%@STRING.SPLIT%% str str "!sep!"
-	%@STRING.SPLIT% str str "!sep!"
-	echo(
-
-	echo(Result:
-	for %%v in (str) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	for %%a in (array) do if defined %%a (echo(  Array %%a of size !%%a[#]!:&for /L %%i in (1,1,!%%a[#]!) do echo(    %%i=[!%%a[%%i]!]) else echo(  Array %%a is undefined.
+	echo.
+	%@ASSERT.DEFINED:$$=array% || exit /b 1
+	set "expected=3"         & %@ASSERT.EQU:$$=array[#],expected% || exit /b 1
+	set "expected=!ref1!"    & %@ASSERT.EQU:$$=array[1],expected% || exit /b 1
+	set "expected=literal 1" & %@ASSERT.EQU:$$=array[2],expected% || exit /b 1
+	set "expected="          & %@ASSERT.EQU:$$=array[3],expected% || exit /b 1
+	set "expected="          & %@ASSERT.EQU:$$=array[4],expected% || exit /b 1
 	exit /b 0
 :continue
 ::==============================================================================
@@ -1019,71 +1139,426 @@ goto :continue
 :::.%@STRING<dot>LOWER:$$=var%                                      (Embeddable)
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@STRING.LOWER) do 2>nul set ^"%%@=for %%v in ($$) do if defined %%v for %%c in (a b c d e f g h i j k l m n o p q r s t u v w x y z) do set "%%v=!%%v:%%c=%%c!"^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-2,-1!"=="^!" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
+for %%@ in (@STRING.LOWER) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else 2>nul set ^"%%@=for %%v in ($$) do if defined %%v for %%c in (a b c d e f g h i j k l m n o p q r s t u v w x y z) do set "%%v=!%%v:%%c=%%c!"^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@STRING.LOWER [var:args]
+:.autotest.@STRING.LOWER [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-2,1!"
+	set "@tag.expected=!"
+	set "params=str"
 	setlocal EnableDelayedExpansion
-	set "str=thIs IS A StrinG"
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 
-	echo(Input:
+	echo(!LF!Before:
+	set "str=ThIs Is a sTRiNg"
 	for %%v in (str) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
-	echo(
 
-	echo(Executing:!LF!  %%@STRING.LOWER:$$=str%%
-	%@STRING.LOWER:$$=str%
-	echo(
+	echo(!LF!Executing:  %%%test%:$$=!params!%%
+	%@macro:$$=!params!%
+	%@ASSERT.SUCCESS% || exit /b 1
 
-	echo(Result:
+	echo(!LF!Result:
 	for %%v in (str) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	echo.
+	set "expected=this is a string" & %@ASSERT.EQU:$$=str,expected% || exit /b 1
 	exit /b 0
 :continue
 
 
 
 
+
 ::==============================================================================
-:::.%@#STRING<dot>LENGTH:$$={var:in},{var:out}%                     (Embeddable)
+:::.%#@STRING<dot>LENGTH:$$={var:in},{var:out}%                     (Embeddable)
 :::.%@STRING<dot>LENGTH:$$={var:in},{var:out}%
 :::
 :::  Based on: https://ss64.org/viewtopic.php?f=2&t=17
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@#STRING.LENGTH) do 2>nul set ^"%%@=for /f "tokens=1-2 delims=, " %%1 in ("$$") do (%##EOL%
+for %%@ in (#@STRING.LENGTH) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined ##EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else 2>nul set ^"%%@=for /f "tokens=1-2 delims=, " %%1 in ("$$") do (%##EOL%
 	set "%%@.tmp=_!%%~1!"^^^&set "%%~2=0"%##EOL%
 	for %%n in (4096 2048 1024 512 256 128 64 32 16 8 4 2 1) do if not "!%%@.tmp:~%%n,1!"=="" (%##EOL%
 		set /A "%%~2+=%%n"%##EOL%
 		set "%%@.tmp=!%%@.tmp:~%%n!"%##EOL%
 	)%##EOL%
 	set "%%@.tmp="%##EOL%
-)^"^
-&& (setlocal EnableDelayedExpansion & if not "!%%@:~-1!"==")" (endlocal&call) else endlocal) || (1>&2 echo(ERROR: Invalid macro definition in %~nx0.& exit /b 1)
-set ^"@STRING.LENGTH=%@#STRING.LENGTH%"
+)^"
+set ^"@STRING.LENGTH=%#@STRING.LENGTH%"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@STRING.LENGTH [var:args]
+:.autotest.@STRING.LENGTH [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-1!"
+	set "@tag.expected=)"
+	set "params=str,len"
 	setlocal EnableDelayedExpansion
-	set "in=EighteenCharacters"
-	set "out="
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 
-	echo(Input:
-	for %%v in (in out) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
-	echo(
+	echo(!LF!Before:
+	set "str=EighteenCharacters"
+	for %%v in (str) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
 
-	echo(Executing:!LF!  %%@STRING.LENGTH:$$=in,out%%
-	%@STRING.LENGTH:$$=in,out%
-	echo(
+	echo(!LF!Executing:  %%%test%:$$=!params!%%
+	%@macro:$$=!params!%
+	%@ASSERT.SUCCESS% || exit /b 1
 
-	echo(Result:
-	for %%v in (in out) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	echo(!LF!Result:
+	for %%v in (len) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	echo.
+	set "expected=18" & %@ASSERT.EQU:$$=len,expected% || exit /b 1
+
+	echo(!LF!Before:
+	set "str="
+	for %%v in (str) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+
+	echo(!LF!Executing:  %%%test%:$$=!params!%%
+	%@macro:$$=!params!%
+	%@ASSERT.SUCCESS% || exit /b 1
+
+	echo(!LF!Result:
+	for %%v in (len) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	echo.
+	set "expected=0" & %@ASSERT.EQU:$$=len,expected% || exit /b 1
 	exit /b 0
 :continue
 
 
 
 
-set "IMPORTS=%IMPORTS% %~n0"
+
+::==============================================================================
+:::.%@STRING<dot>CONCAT%   {var:out} {var|"str":sep} {/keepempty|""} [var|"str"] [var|"str"] ...
+:::
+::-------- BEGIN MACRO DEFINITION ----------------------------------------------
+for %%@ in (@STRING.CONCAT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 2  Macro Body                                               -% %#EOL%
+set "%%@.err="^&for /f "tokens=1-3* delims=	 " %%1 in ("!%%@.args!") do (%#EOL%
+       if "%%~1"=="" (set %%@.err=1%#EOL%
+) else if "%%2"=="" (set %%@.err=1%#EOL%
+) else (%#EOL%
+	if %%2=="%%~2" (set "%%@.sep=%%~2") else set "%%@.sep=!%%2!"%= Dereference unquoted value =%%#EOL%
+	set "%%@.out=" %#EOL%
+	for %%4 in (%%4) do (%= Construct output string=%%#EOL%
+		if %%4=="%%~4" (set "%%@.val=%%~4") else set "%%@.val=!%%4!"%= Dereference unquoted value =%%#EOL%
+		if not "%%~3"=="" (       if defined %%@.out (set "%%@.out=!%%@.out!!%%@.sep!!%%@.val!") else set "%%@.out=!%%@.val!"%= /keepempty              =%%#EOL%
+		) else if defined %%@.val if defined %%@.out (set "%%@.out=!%%@.out!!%%@.sep!!%%@.val!") else set "%%@.out=!%%@.val!"%= keep nonempty (default) =%%#EOL%
+	)%#EOL%
+	set "%%~1=!%%@.out!"%= Store value =%%#EOL%
+))%#EOL%
+%= Cleanup local variables =% %#EOL%
+set "%%@.args="%#EOL%
+set "%%@.out="%#EOL%
+set "%%@.sep="%#EOL%
+set "%%@.val="%#EOL%
+%= Return error if something went wrong =% %#EOL%
+if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"
+::-------- END MACRO DEFINITION ------------------------------------------------
+goto :continue
+:.autotest.@STRING.CONCAT [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=out !sep! !keepempty! !vals!"
+	setlocal EnableDelayedExpansion
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+
+	set "out="
+	set "sep="^<^>""
+	set "keepempty="""
+	set "vals=var1 "value 2" "" var2"
+		set "var1=value 1"
+		set "var2=value 3"
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
+
+	echo(!LF!Result:
+	for %%v in (out) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	echo.
+	set "expected=!var1!<>value 2<>!var2!" & %@ASSERT.EQU:$$=out,expected% || exit /b 1
+
+	exit /b 0
+:continue
+::==============================================================================
+
+
+
+
+
+::==============================================================================
+:::.%@STRING<dot>SPLIT%    {var:in} {var|"str":split} {var|"str":join} [/keepempty]
+:::
+::-------- BEGIN MACRO DEFINITION ----------------------------------------------
+for %%@ in (@STRING.SPLIT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 2  Macro Body                                               -% %#EOL%
+set %%@.[#]=0^&set "%%@.err="^&for %%a in (!%%@.args!) do set /A "%%@.[#]+=1"^&(%#EOL%
+	       if !%%@.[#]! EQU 1 (set "%%@.val=%%~a" ^& set "%%@.in=!%%~a!"%#EOL%
+	) else if !%%@.[#]! EQU 4 (set "%%@.val=%%~a"%#EOL%
+	) else (set ^"%%@.val=%%a^"!%#LF%if !%%@.val!=="!%%@.val:~1,-1!" (set "%%@.val=!%%@.val:~1,-1!"^&if defined %%@.val set ^^^"%%@.val=!%%@.val:""="!") else set "%%@.val=!%%a!")%#EOL%
+)^&set "%%@.[!%%@.[#]!]=!%%@.val!"%= Store argument value              =% %#EOL%
+if !%%@.[#]! LSS 3 (set %%@.err=1) else if defined %%@.in if defined %%@.[2] (%#EOL%
+	for %%2 in ("!%%@.[2]!") do for %%3 in ("!%%@.[3]!") do (%#EOL%
+		if defined %%@.[4] (%=                  /keepempty             =%%#EOL%
+			set "%%@.in=!%%@.in:%%~2=%%~3!"!%=     Split and Join      =%%#EOL%
+		) else (%=                              Remove empty           =%%#EOL%
+			set "%%@.in=!%%@.in:#=#m!"%=           Escape '#' so we can use it as a marker =%%#EOL%
+			set "%%@.in=!%%@.in:%%~2=#x#2#x!"!%=   Mark before and after each [split] =%%#EOL%
+			set "%%@.in=!%%@.in:#x#x=!"%=          Remove consecutive marks. Now each block of linefeeds is surrounded by marks.=%%#EOL%
+			set "%%@.in=!%%@.in:#2=!"%=            Remove [split]s, bringing start+end marks together. =%%#EOL%
+			if "!%%@.in:~0,4!"=="#x#x" set "%%@.in=!%%@.in:~4!"%=     Remove leading marker  =%%#EOL%
+			if "!%%@.in:~-4,4!"=="#x#x" set "%%@.in=!%%@.in:~0,-4!"%= Remove trailing marker =%%#EOL%
+			if defined %%@.in set "%%@.in=!%%@.in:#x#x=%%~3!"!%=      Join                   =%%#EOL%
+			if defined %%@.in set "%%@.in=!%%@.in:#m=#!"%#EOL%
+		) %#EOL%
+		set "!%%@.[1]!=!%%@.in!"%#EOL%
+	)%#EOL%
+)%#EOL%
+%= Cleanup local variables =% %#EOL%
+for /L %%i in (1,1,!%%@.[#]!) do set "%%@.[%%i]="%#EOL%
+set "%%@.[#]="%#EOL%
+set "%%@.args="%#EOL%
+set "%%@.in="%#EOL%
+set "%%@.val="%#EOL%
+%= Return error if something went wrong =% %#EOL%
+if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"
+::-------- END MACRO DEFINITION ------------------------------------------------
+goto :continue
+:.autotest.@STRING.SPLIT [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-3!"
+	set "@tag.expected=!=!"
+	set "params=str !split! !join! !keepempty!"
+	setlocal EnableDelayedExpansion
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+
+	echo(!LF!Before:
+	set "str=!LF!!LF!#Line 3#!LF!Line 4!LF!!LF!Line 6!LF!"
+	set split=LF
+	set join="<>"
+	set keepempty=""
+	for %%v in (str) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
+
+	echo(!LF!Result:
+	for %%v in (str) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	echo.
+	set "expected=#Line 3#<>Line 4<>Line 6" & %@ASSERT.EQU:$$=str,expected% || exit /b 1
+
+	exit /b 0
+:continue
+::==============================================================================
+
+
+
+
+
+::==============================================================================
+:::.%@ASSERT<dot>ENABLE%                                     (Expandable in DDE)
+:::.%@ASSERT<dot>DISABLE%                                    (Expandable in DDE)
+:::.%@ASSERT<dot>DEFINED:$$={var}% || exit /b 1              (Expandable in DDE)
+:::.%@ASSERT<dot>UNDEFINED:$$={var}% || exit /b 1            (Expandable in DDE)
+:::.%@ASSERT<dot>EQU:$$={var:1},{var:2}% || exit /b 1        (Expandable in DDE)
+:::.%@ASSERT<dot>NEQ:$$={var:1},{var:2}% || exit /b 1        (Expandable in DDE)
+:::.%@ASSERT<dot>SUCCESS% || exit /b 1                       (Expandable in DDE)
+:::.%@ASSERT<dot>FAILURE% || exit /b 1                       (Expandable in DDE)
+:::.%@ASSERT<dot>DDE% || exit /b 1                           (Expandable in DDE)
+:::.%@ASSERT<dot>EDE% || exit /b 1                           (Expandable in DDE)
+::-------- BEGIN MACRO DEFINITION ----------------------------------------------
+for %%@ in (@ASSERT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else set ^"%%@.ENABLE=(set "%%@.DISABLE.ALL=")^"&^
+set ^"%%@.DISABLE=(set "%%@.DISABLE.ALL=1")^"&^
+set ^"%%@.DEFINED=(if defined %%@.DISABLE.ALL (call ) else setlocal EnableDelayedExpansion ^& (%#EOL%
+if defined $$ (%#EOL%
+	echo ---^^^> %%@.DEFINED:$$  Passed%#EOL%
+	echo(       $$=[!$$!]%#EOL%
+endlocal^&call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.DEFINED:$$  Failed%#EOL%
+	echo(       $$ is undefined%#EOL%
+endlocal^&call)%#EOL%
+))^"&^
+set ^"%%@.UNDEFINED=(if defined %%@.DISABLE.ALL (call ) else setlocal EnableDelayedExpansion ^& (%#EOL%
+if not defined $$ (%#EOL%
+	echo ---^^^> %%@.UNDEFINED:$$  Passed%#EOL%
+	echo(       $$ is undefined%#EOL%
+endlocal^&call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.UNDEFINED:$$  Failed%#EOL%
+	echo(       $$=[!$$!]%#EOL%
+endlocal^&call)%#EOL%
+))^"&^
+set ^"%%@.EQU=(if defined %%@.DISABLE.ALL (call ) else for /f "tokens=1-2 delims=, " %%1 in ("$$,%%@.var2,%%@.var1") do setlocal EnableDelayedExpansion ^& set "%%@.var1=VAR1 NOT FOUND" ^& set "%%@.var2=VAR2 NOT FOUND" ^& (%#EOL%
+if "!%%1!"=="!%%2!" (%#EOL%
+	echo ---^^^> %%@.EQU:$$  Passed%#EOL%
+	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
+	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
+endlocal^&call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.EQU:$$  Failed%#EOL%
+	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
+	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
+endlocal^&call)%#EOL%
+))^"&^
+set ^"%%@.NEQ=(if defined %%@.DISABLE.ALL (call ) else for /f "tokens=1-2 delims=, " %%1 in ("$$,%%@.var2,%%@.var1") do setlocal EnableDelayedExpansion ^& set "%%@.var1=VAR1 NOT FOUND" ^& set "%%@.var2=VAR2 NOT FOUND" ^& (%#EOL%
+if not "!%%1!"=="!%%2!" (%#EOL%
+	echo ---^^^> %%@.NEQ:$$  Passed%#EOL%
+	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
+	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
+endlocal^&call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.NEQ:$$  Failed%#EOL%
+	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
+	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
+endlocal^&call)%#EOL%
+))^"&^
+set ^"%%@.SUCCESS=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
+if not ERRORLEVEL 1 (%#EOL%
+	echo ---^^^> %%@.SUCCESS:  Passed%#EOL%
+call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.SUCCESS:  Failed%#EOL%
+call)%#EOL%
+))^"&^
+set ^"%%@.FAILURE=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
+if ERRORLEVEL 1 (%#EOL%
+	echo ---^^^> %%@.FAILURE:  Passed%#EOL%
+call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.FAILURE:  Failed%#EOL%
+call)%#EOL%
+))^"&^
+set ^"%%@.DDE=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
+if not "!!"=="" (%#EOL%
+	echo ---^^^> %%@.DDE:  Passed%#EOL%
+call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.DDE:  Failed%#EOL%
+call)%#EOL%
+))^"&^
+set ^"%%@.EDE=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
+if "!!"=="" (%#EOL%
+	echo ---^^^> %%@.EDE:  Passed%#EOL%
+call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.EDE:  Failed%#EOL%
+call)%#EOL%
+))^"
+::-------- END MACRO DEFINITION ------------------------------------------------
+goto :continue
+:.autotest.@ASSERT.{all} [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "empty="
+
+	%@ASSERT.DISABLE%            1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
+	(call) & %@ASSERT.DEFINED%   1>nul 2>&1 && (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
+	%@ASSERT.ENABLE%             1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.ENABLE    failed&exit /b 1) || (echo        Test: @ASSERT.ENABLE    passed&(call   ))
+	%@ASSERT.DEFINED:$$=test%    1>nul 2>&1 && (echo        Test: @ASSERT.DEFINED   passed&(call   )) || (echo        Test: @ASSERT.DEFINED   failed&exit /b 1)
+	%@ASSERT.UNDEFINED:$$=empty% 1>nul 2>&1 && (echo        Test: @ASSERT.UNDEFINED passed&(call   )) || (echo        Test: @ASSERT.UNDEFINED failed&exit /b 1)
+	%@ASSERT.EQU:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.EQU       failed&exit /b 1) || (echo        Test: @ASSERT.EQU       passed&(call   ))
+	%@ASSERT.NEQ:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.NEQ       passed&(call   )) || (echo        Test: @ASSERT.NEQ       failed&exit /b 1)
+	(call) & %@ASSERT.SUCCESS%   1>nul 2>&1 && (echo        Test: @ASSERT.SUCCESS   failed&exit /b 1) || (echo        Test: @ASSERT.SUCCESS   passed&(call   ))
+	(call) & %@ASSERT.FAILURE%   1>nul 2>&1 && (echo        Test: @ASSERT.FAILURE   passed&(call   )) || (echo        Test: @ASSERT.FAILURE   failed&exit /b 1)
+	%@ASSERT.DDE%                1>nul 2>&1 && (echo        Test: @ASSERT.DDE       passed&(call   )) || (echo        Test: @ASSERT.DDE       failed&exit /b 1)
+	%@ASSERT.EDE%                1>nul 2>&1 && (echo        Test: @ASSERT.EDE       failed&exit /b 1) || (echo        Test: @ASSERT.EDE       passed&(call   ))
+
+	setlocal EnableDelayedExpansion
+	%@ASSERT.DISABLE%            1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
+	(call) & %@ASSERT.DEFINED%   1>nul 2>&1 && (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
+	%@ASSERT.ENABLE%             1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.ENABLE    failed&exit /b 1) || (echo        Test: @ASSERT.ENABLE    passed&(call   ))
+	%@ASSERT.DEFINED:$$=test%    1>nul 2>&1 && (echo        Test: @ASSERT.DEFINED   passed&(call   )) || (echo        Test: @ASSERT.DEFINED   failed&exit /b 1)
+	%@ASSERT.UNDEFINED:$$=empty% 1>nul 2>&1 && (echo        Test: @ASSERT.UNDEFINED passed&(call   )) || (echo        Test: @ASSERT.UNDEFINED failed&exit /b 1)
+	%@ASSERT.EQU:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.EQU       failed&exit /b 1) || (echo        Test: @ASSERT.EQU       passed&(call   ))
+	%@ASSERT.NEQ:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.NEQ       passed&(call   )) || (echo        Test: @ASSERT.NEQ       failed&exit /b 1)
+	(call) & %@ASSERT.SUCCESS%   1>nul 2>&1 && (echo        Test: @ASSERT.SUCCESS   failed&exit /b 1) || (echo        Test: @ASSERT.SUCCESS   passed&(call   ))
+	(call) & %@ASSERT.FAILURE%   1>nul 2>&1 && (echo        Test: @ASSERT.FAILURE   passed&(call   )) || (echo        Test: @ASSERT.FAILURE   failed&exit /b 1)
+	%@ASSERT.DDE%                1>nul 2>&1 && (echo        Test: @ASSERT.DDE       failed&exit /b 1) || (echo        Test: @ASSERT.DDE       passed&(call   ))
+	%@ASSERT.EDE%                1>nul 2>&1 && (echo        Test: @ASSERT.EDE       passed&(call   )) || (echo        Test: @ASSERT.EDE       failed&exit /b 1)
+	exit /b 0
+:continue
+::==============================================================================
+
+
+
+
+
+::==============================================================================
+:::.%@CONSTS<dot>SPECIAL%                                    (Expandable in DDE)
+:::
+::: Defines Special Characters:
+:::  !CR!  --> Carriage Return (ASCII code 13, 0x0D)    (Expansion requires EDE)
+:::  !FF!  --> Form Feed       (ASCII code 12; 0x0C)    (Expansion requires EDE)
+:::  !BS!  --> Backspace       (ASCII code  8; 0x08)    (Expansion requires EDE)
+:::  !ESC! --> Escape          (ASCII code 27; 0x1B)    (Expansion requires EDE)
+:::
+::-------- BEGIN MACRO DEFINITION ----------------------------------------------
+for %%@ in (@CONSTS.SPECIAL) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else set ^"%%@=(%#EOL%
+	for %%v in (CR FF BS ESC) do set "%%v="%#EOL%
+	for /f "tokens=1-3 delims= " %%1 in ('"@echo off & copy /Z "%COMSPEC%" nul & cls & prompt $H$S$E & echo on & for %%# in (#) do rem"') do (%#EOL%
+		       if not defined CR (set "CR=%%1"%#EOL%
+		) else if not defined FF (set "FF=%%1"%#EOL%
+		) else if not defined BS (set "BS=%%1" ^& set "ESC=%%3"%#EOL%
+		)%#EOL%
+	)%#EOL%
+)^"
+::-------- END MACRO DEFINITION ------------------------------------------------
+goto :continue
+:.autotest.@CONSTS.SPECIAL [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-1!"
+	set "@tag.expected=)"
+	set "params="
+	setlocal EnableDelayedExpansion
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+
+	for %%v in (CR FF BS ESC) do set "%%v="
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
+
+	echo(!LF!Result:
+	%@ASSERT.DEFINED:$$=CR%
+	%@ASSERT.DEFINED:$$=FF%
+	%@ASSERT.DEFINED:$$=BS%
+	if defined ESC (echo(---^> @ASSERT.DEFINED:ESC  Passed) else (---^> @ASSERT.DEFINED:ESC  Failed&exit /b 1)
+
+	exit /b 0
+:continue
+::==============================================================================
+
+
+
+set "IMPORTS=%IMPORTS%;%~nx0"
 exit /b 0
 %======================  END .autogoto.import  ======================%  goto :EOF
 
@@ -1093,7 +1568,7 @@ exit /b 0
 :.autogoto.list [keyword]      Lists available macros.
 setlocal DisableDelayedExpansion
 set "file=%~f0"
-set "find=%~2"
+set "find=%~1"
 echo(---------------------------------------------------------------------------
 echo For more info on a particular definition, use:
 echo   %~nx0 /? [macro]
@@ -1124,60 +1599,58 @@ exit /b 0
 :.autogoto.? [macro]           Prints detailed documentation.
 setlocal DisableDelayedExpansion
 set "file=%~f0"
-set "find=%~2"
-set "manbat=" & for %%a in ("man.bat") do set "manbat=%%~$PATH:a"
+set "find=%~1"
+if exist "%~dp0man.bat" (set "man=%~dp0man.bat") else for %%P in ("man.bat") do set "man=%%~$PATH:P"
 setlocal EnableDelayedExpansion
 if "!find!"=="" goto :info.general
 if not "!find:@=!"=="!find!" if "!find:.=!"=="!find!" (goto :info.category) else goto :info.macro
 goto :info.macro
 :info.general
 	call "!file!" print/usage
-	if defined manbat call "!manbat!" "!file!" "/inc:{head} /inc:{general}" "/inc:{head} /inc:{category} /exc:{detail}"
+	if defined man call "!man!" "!file!" "/inc:{head} /inc:{general}" "/inc:{head} /inc:{category} /exc:{detail}"
 	exit /b 1
 :info.category
-	if defined manbat call "!manbat!" "!file!" "/inc:{head} /inc:{category} /inc:!find!"
+	if defined man call "!man!" "!file!" "/inc:{head} /inc:{category} /inc:!find!"
 	call "!file!" /list "!find!"
 	exit /b 1
 :info.macro
-	if defined manbat call "!manbat!" "!file!" "/exc:{head} /exc:autogoto /exc:autotest /inc:@ /inc:!find:@=!"
+	if defined man call "!man!" "!file!" "/exc:{head} /exc:autogoto /exc:autotest /inc:@ /inc:!find:@=!"
 	exit /b 1
 %=========================  END .autogoto.?  ========================%  goto :EOF
 
 
 
 %====================================================================%  goto :EOF
-:.autogoto.test name [args]    Runs built-in unit tests.
+:.autogoto.test ["names"]      Runs built-in unit tests.
 setlocal DisableDelayedExpansion
 set "div==================================================="
-set "file=%~f0"
-set "n0=%~n0"
-set "nx0=%~nx0"
-set "tests=%~2"
-set ^"args=%3 %4 %5 %6 %7 %8 %9^"
-if defined tests (set "quiet=") else set "quiet=>nul"
-if defined tests (set "printdef=echo(!div!!LF!%%T=!%%T!!LF!!div!") else set "printdef="
+set "file.f=%~f0"
+set "file.n0=%~n0"
+set "file.nx0=%~nx0"
+set "tests=%~1"
+set ^"args=%2 %3 %4 %5 %6 %7 %8 %9^"
+if defined tests (set "quiet=") else set "quiet=1>nul 2>&1"
 
 :: Import macro definitions from this file
-call "%file%" /import || (2>&1 echo One or more macros failed to import.& exit /b 1)
+call "%file.f%" /import || (1>&2 echo One or more macros failed to import.& exit /b 1)
 setlocal EnableDelayedExpansion
 
 :: Scan this file for autotest labels
 if not defined tests (
-	echo !div!!LF!!nx0!: Scanning for tests...
-	for /f "tokens=1" %%l in ('findstr /BLIC:":.autotest." "!file!"') do (
+	echo !div!!LF!!file.nx0!: Scanning for tests...
+	for /f "tokens=1" %%l in ('findstr /BLIC:":.autotest." "!file.f!"') do (
 		set "label=%%l" & echo   Found label: [!label!]
 		set "tests=!tests! !label::.autotest.=!"
 	)
 )
 
 :: Run tests
-echo !LF!!nx0!: Running tests...
+echo !LF!!file.nx0!: Running tests...
 set /A "num_tests=0,num_success=0"
 for %%T in (!tests!) do (
-	%printdef%
 	set /A "num_tests+=1"
 	%quiet% echo !LF!---^> Test !num_tests! ^(%%T^):
-	%quiet% call :.autotest.%%T args && (
+	%quiet% call :.autotest.%%T !args! && (
 		set /A "num_success+=1"
 		%quiet% echo !div!!LF!
 		        echo ---^> Test !num_tests!%tab%%%T%tab%%tab%SUCCESS
@@ -1188,7 +1661,7 @@ for %%T in (!tests!) do (
 )
 
 :: Print results
-echo !LF!!div!!LF!!nx0!: !num_success!/!num_tests! tests passed.!LF!
+echo !LF!!div!!LF!!file.nx0!: !num_success!/!num_tests! tests passed.!LF!
 if "!num_tests!"=="!num_success!" (exit /b 0) else exit /b 1
 %=======================  END .autogoto.test  =======================%  goto :EOF
 
