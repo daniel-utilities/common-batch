@@ -221,7 +221,7 @@ set "@END=endlocal"
 for %%@ in (#@ARGS.SPLIT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined ###LF (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ###LF.& exit /b 1
 ) else if not defined ##EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ##EOL.& exit /b 1
-) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%##EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%##EOL%
 %----------------------------------------------------------------------% %##EOL%
 %- SECTION 2  Macro Body                                              -% %##EOL%
 for /f "tokens=1-4" %%1 in ("!%%@.args!") do if not "%%~1"=="" for /f "tokens=1" %%2 in ("%%~2 %%~1") do for %%L in (^^^^^^^"%###LF%^^^^^^^") do (%##EOL%
@@ -388,7 +388,7 @@ goto :continue
 for %%@ in (@ARGS.PARSE) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
 ) else if not defined #@ARGS.SPLIT (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #@ARGS.SPLIT.& exit /b 1
-) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %-----------------------------------------------------------------------% %#EOL%
 %- SECTION 2  Macro Body                                               -% %#EOL%
 if "!!"=="" (setlocal EnableDelayedExpansion ^& set "%%@.args=EDE !%%@.args!"%#EOL%
@@ -567,7 +567,7 @@ goto :continue
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@ARRAY.DEFINE) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %-----------------------------------------------------------------------% %#EOL%
 %- SECTION 2  Macro Body                                               -% %#EOL%
 set %%@.err=^&for /f "tokens=1-2* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
@@ -646,7 +646,7 @@ goto :continue
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@ARRAY.DELETE) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else  2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %=---------------------------------------------------------------------=% %#EOL%
 %= SECTION 2  Macro Body                                               =% %#EOL%
 for %%a in (!%%@.args!) do for %%v in (!%%~a!) do set "%%v="%#EOL%
@@ -708,7 +708,7 @@ goto :continue
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@ARRAY.GET) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else  2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %=---------------------------------------------------------------------=% %#EOL%
 %= SECTION 2  Macro Body                                               =% %#EOL%
 set %%@.err=^&for /f "tokens=1-3 delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
@@ -770,7 +770,7 @@ goto :continue
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@ARRAY.SET) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else  2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %=---------------------------------------------------------------------=% %#EOL%
 %= SECTION 2  Macro Body                                               =% %#EOL%
 set %%@.err=^&for /f "tokens=1-2* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
@@ -842,7 +842,7 @@ goto :continue
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@ARRAY.FOREACH) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
-) else 2>nul set ^"%%@=for %%v in ($$) do for /L %%i in (1,1,!%%v[#]!) do ^"
+) else set ^"%%@=for %%v in ($$) do for /L %%i in (1,1,!%%v[#]!) do ^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
 :.autotest.@ARRAY.FOREACH
@@ -883,7 +883,7 @@ goto :continue
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@ARRAY.CONTAINS) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %=---------------------------------------------------------------------=% %#EOL%
 %= SECTION 2  Macro Body                                               =% %#EOL%
 set "%%@.err="^&for /f "tokens=1-2* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
@@ -966,7 +966,7 @@ goto :continue
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@ARRAY.APPEND) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %=---------------------------------------------------------------------=% %#EOL%
 %= SECTION 2  Macro Body                                               =% %#EOL%
 set "%%@.err="^&for /f "tokens=1* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
@@ -1041,7 +1041,7 @@ goto :continue
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@ARRAY.INSERT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %=---------------------------------------------------------------------=% %#EOL%
 %= SECTION 2  Macro Body                                               =% %#EOL%
 set "%%@.err="^&for /f "tokens=1-2* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
@@ -1129,7 +1129,7 @@ goto :continue
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@ARRAY.REMOVE) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %=---------------------------------------------------------------------=% %#EOL%
 %= SECTION 2  Macro Body                                               =% %#EOL%
 set "%%@.err="^&for /f "tokens=1* delims=[]= " %%1 in ("!%%@.args!") do (%#EOL%
@@ -1420,7 +1420,7 @@ goto :continue
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@STRING.LOWER) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
-) else 2>nul set ^"%%@=for %%v in ($$) do if defined %%v for %%c in (a b c d e f g h i j k l m n o p q r s t u v w x y z) do set "%%v=!%%v:%%c=%%c!"^"
+) else set ^"%%@=for %%v in ($$) do if defined %%v for %%c in (a b c d e f g h i j k l m n o p q r s t u v w x y z) do set "%%v=!%%v:%%c=%%c!"^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
 :.autotest.@STRING.LOWER
@@ -1462,7 +1462,7 @@ goto :continue
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (#@STRING.LENGTH) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined ##EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else 2>nul set ^"%%@=for /f "tokens=1-2 delims=, " %%1 in ("$$") do (%##EOL%
+) else set ^"%%@=for /f "tokens=1-2 delims=, " %%1 in ("$$") do (%##EOL%
 	set "%%@.tmp=_!%%~1!"^^^&set "%%~2=0"%##EOL%
 	for %%n in (4096 2048 1024 512 256 128 64 32 16 8 4 2 1) do if not "!%%@.tmp:~%%n,1!"=="" (%##EOL%
 		set /A "%%~2+=%%n"%##EOL%
@@ -1522,7 +1522,7 @@ goto :continue
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@STRING.CONCAT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %-----------------------------------------------------------------------% %#EOL%
 %- SECTION 2  Macro Body                                               -% %#EOL%
 set "%%@.err="^&for /f "tokens=1-3* delims=	 " %%1 in ("!%%@.args!") do (%#EOL%
@@ -1590,7 +1590,7 @@ goto :continue
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@STRING.SPLIT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %-----------------------------------------------------------------------% %#EOL%
 %- SECTION 2  Macro Body                                               -% %#EOL%
 set %%@.[#]=0^&set "%%@.err="^&for %%a in (!%%@.args!) do set /A "%%@.[#]+=1"^&(%#EOL%
@@ -1665,10 +1665,12 @@ goto :continue
 ::==============================================================================
 :::.%@VAR.PRINT% [var|"str":1] [var|"str":2] ...             (Expandable in DDE)
 :::
+:::  Prints the values to standard output.
+:::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@VAR.PRINT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+) else set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %-----------------------------------------------------------------------% %#EOL%
 %- SECTION 2  Macro Body                                               -% %#EOL%
 if "!!"=="" (setlocal EnableDelayedExpansion^&set "%%@.args=EDE !%%@.args!"%#EOL%
@@ -1787,7 +1789,7 @@ goto :continue
 for %%@ in (#@VAR.PUSHPOP) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined ##EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ##EOL.& exit /b 1
 ) else if not defined ###LF (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ###LF.& exit /b 1
-) else 2>nul set ^"%%@=for %%L in (^^^^^^^"%###LF%^^^^^^^") do (%##EOL%
+) else set ^"%%@=for %%L in (^^^^^^^"%###LF%^^^^^^^") do (%##EOL%
 if ERRORLEVEL 1 (setlocal EnableDelayedExpansion ^^^& set "%%@.errlvl=1"%##EOL%
 ) else setlocal EnableDelayedExpansion ^^^& set "%%@.errlvl=0"%##EOL%
 set "%%@.return="%##EOL%
@@ -1951,19 +1953,47 @@ goto :continue
 
 
 ::==============================================================================
+:::.%@INFO:$$={var|"str":msg}%                               (Expandable in DDE)
+:::.%@WARN:$$={var|"str":msg}%                               (Expandable in DDE)
 :::.%@THROW% {errlvl} [var|"str":msg]                        (Expandable in DDE)
 :::
-::: Prints an error message, then exits the entire 'call' stack up to and
-::: including the current script, and sets ERRORLEVEL.
-::: - If %@EXIT.PREHOOK% is a valid label, calls it before exiting the
-:::   top-level call.
-::: - If %@EXIT.POSTHOOK% is a valid label, calls it before exiting the
-:::   base-level script.
+:::  @INFO:  Prints an info message to stdout.
+:::  @WARN:  Prints a warning message to stderr, but continues.
+:::  @THROW: Prints an error message to stderr, then exits the entire 'call'
+:::          stack up to and including the current script, and sets ERRORLEVEL.
+:::          - If %@EXIT.PREHOOK% is a valid label, calls it before exiting the
+:::            top-level call.
+:::          - If %@EXIT.POSTHOOK% is a valid label, calls it before exiting the
+:::            base-level script.
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@THROW) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
-) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro @INFO definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro @INFO definition requires #EOL.& exit /b 1
+) else set ^"@INFO=for %%a in ($$) do (%#EOL%
+	setlocal DisableDelayedExpansion%#EOL%
+	if _%%a==_"%%~a" (%=    dequote =%%#EOL%
+		setlocal DisableDelayedExpansion%#EOL%
+		echo([@INFO] %%~a%#EOL%
+		endlocal%#EOL%
+	) else (%=          dereference =%%#EOL%
+		setlocal EnableDelayedExpansion%#EOL%
+		echo([@INFO] !%%a!%#EOL%
+		endlocal%#EOL%
+	)%#EOL%
+	endlocal%#EOL%
+)^" & set ^"@WARN=for %%a in ($$) do (%#EOL%
+	setlocal DisableDelayedExpansion%#EOL%
+	if _%%a==_"%%~a" (%=    dequote =%%#EOL%
+		setlocal DisableDelayedExpansion%#EOL%
+		1^>^&2 echo([@WARN] %%~a%#EOL%
+		endlocal%#EOL%
+	) else (%=          dereference =%%#EOL%
+		setlocal EnableDelayedExpansion%#EOL%
+		1^>^&2 echo([@WARN] !%%a!%#EOL%
+		endlocal%#EOL%
+	)%#EOL%
+	endlocal%#EOL%
+)^" & for %%@ in (@THROW) do set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %-----------------------------------------------------------------------% %#EOL%
 %- SECTION 2  Macro Body                                               -% %#EOL%
 if "!!"=="" (setlocal EnableDelayedExpansion^&set "%%@.args=EDE !%%@.args!"%#EOL%
@@ -2001,27 +2031,76 @@ for /f "tokens=2*" %%1 in ("!%%@.args!") do for /f "tokens=1-2" %%P in (^""!@EXI
 %- SECTION 1  Collect Macro Arguments              -% ) else set %%@.args=!=! ^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:::.autotest.@THROW
-::	setlocal DisableDelayedExpansion
-::	set "label=%0" & set ^"args=%*"
-::	set "test=%label::.autotest.=%"
-::	set "@tag=!@macro:~-4!"
-::	set "@tag.expected=!=! "
-::	set "params=!errlvl! errmsg"
-::	setlocal EnableDelayedExpansion
-::	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
-::	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
-
+:.autotest.@INFO
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-1!"
+	set "@tag.expected=)"
+	set "params=!msg!"
+	setlocal EnableDelayedExpansion
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+	echo(!LF!Before:
+	set "msg=This is an info message"
+	for %%v in (msg) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	echo(!LF!Executing:  %%%test%:$$=!params!%%
+	setlocal EnableDelayedExpansion
+		%@macro:$$=!params!%
+		%@ASSERT.SUCCESS% || exit /b 1
+		%@ASSERT.EDE% || exit /b 1
+	endlocal
+	echo(!LF!Executing:  %%%test%:$$=!params!%%
+	setlocal DisableDelayedExpansion
+		%@macro:$$=!params!%
+		%@ASSERT.SUCCESS% || exit /b 1
+		%@ASSERT.DDE% || exit /b 1
+	endlocal
+	exit /b 0
+:.autotest.@WARN
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-1!"
+	set "@tag.expected=)"
+	set "params=!msg!"
+	setlocal EnableDelayedExpansion
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+	echo(!LF!Before:
+	set "msg=This is a warning message"
+	for %%v in (msg) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	echo(!LF!Executing:  %%%test%:$$=!params!%%
+	setlocal EnableDelayedExpansion
+		%@macro:$$=!params!%
+		%@ASSERT.SUCCESS% || exit /b 1
+		%@ASSERT.EDE% || exit /b 1
+	endlocal
+	echo(!LF!Executing:  %%%test%:$$=!params!%%
+	setlocal DisableDelayedExpansion
+		%@macro:$$=!params!%
+		%@ASSERT.SUCCESS% || exit /b 1
+		%@ASSERT.DDE% || exit /b 1
+	endlocal
+	exit /b 0
+:.autotest.@THROW
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-4!"
+	set "@tag.expected=!=! "
+	set "params=!errlvl! errmsg"
+	setlocal EnableDelayedExpansion
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 ::	echo(!LF!Before:
 ::	set "errlvl=5"
 ::	set "errmsg=this is an error message"
 ::	set "@EXIT.PREHOOK=.autotest.@EXIT.PREHOOK"
 ::	set "@EXIT.POSTHOOK=.autotest.@EXIT.POSTHOOK"
 ::	for %%v in (errlvl msg) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
-
 ::	echo(!LF!Executing:  %%%test%%% %params%
 ::	%@macro% %params%
-
 ::	echo(Should not get here^!^!
 ::	exit /b 1
 :::.autotest.@EXIT.PREHOOK [func] [errlvl]
@@ -2033,7 +2112,7 @@ goto :continue
 ::	setlocal DisableDelayedExpansion
 ::	echo.  Now in [%0]:
 ::	echo.  Exiting script %~1 with errorlevel %2
-::	exit /b 0
+	exit /b 0
 :continue
 ::==============================================================================
 
