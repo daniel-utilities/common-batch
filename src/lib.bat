@@ -1662,6 +1662,78 @@ goto :continue
 
 
 
+::==============================================================================
+:::.%@VAR.PRINT% [var|"str":1] [var|"str":2] ...             (Expandable in DDE)
+:::
+::-------- BEGIN MACRO DEFINITION ----------------------------------------------
+for %%@ in (@VAR.PRINT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 2  Macro Body                                               -% %#EOL%
+if "!!"=="" (setlocal EnableDelayedExpansion^&set "%%@.args=EDE !%%@.args!"%#EOL%
+) else setlocal EnableDelayedExpansion%#EOL%
+set "%%@.nargs=0"%#EOL%
+for %%a in (!%%@.args!) do set /A "%%@.nargs+=1" ^& if !%%@.nargs! GTR 1 (%#EOL%
+	if _%%a==_"%%~a" (%=    dequote =%%#EOL%
+		setlocal DisableDelayedExpansion%#EOL%
+		echo(%%~a%#EOL%
+		endlocal%#EOL%
+	) else (%=          dereference =%%#EOL%
+		setlocal EnableDelayedExpansion%#EOL%
+		if defined %%a (%#EOL%
+				echo(  %%a=[!%%a!]%#EOL%
+		) else	echo(  %%a is undefined%#EOL%
+		endlocal%#EOL%
+	)%#EOL%
+)%#EOL%
+endlocal%#EOL%
+set "%%@.args="%#EOL%
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 1  Collect Macro Arguments              -% ) else set %%@.args=!=! ^"
+::-------- END MACRO DEFINITION ------------------------------------------------
+goto :continue
+:.autotest.@VAR.PRINT
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-4!"
+	set "@tag.expected=!=! "
+	set "params="!str1!" str2 "!str3!" str4"
+	setlocal EnableDelayedExpansion
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+
+	echo(!LF!Before:
+	set "str1=String 1"
+	set "str2=this is a!LF!multiline string 2"
+	set "str3="
+	set "str4=^!^!^!^!"
+	for %%v in (str1 str2 str3 str4) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	setlocal EnableDelayedExpansion
+		%@macro% %params%
+		%@ASSERT.SUCCESS% || exit /b 1
+		%@ASSERT.EDE% || exit /b 1
+		%@ASSERT.UNDEFINED:$$=!test!.args%
+	endlocal
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	setlocal DisableDelayedExpansion
+		%@macro% %params%
+		%@ASSERT.SUCCESS% || exit /b 1
+		%@ASSERT.DDE% || exit /b 1
+		%@ASSERT.UNDEFINED:$$=!test!.args%
+	endlocal
+	exit /b 0
+:continue
+::==============================================================================
+
+
+
+
+
 
 ::==============================================================================
 :::.%@VAR.PUSHPOP:$$=[var:1] [var:2] ... % ( ... )           (Expandable in DDE)
@@ -1835,8 +1907,8 @@ goto :continue
 	echo(!LF!Result:
 	for %%v in (str1 str2 str3) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
 	echo.
-	set ^"expected=^&^^"^&^!line 2^!line 4^^" & %@ASSERT.EQU:$$=str1,expected% || exit /b 1
-	set "expected="     & %@ASSERT.EQU:$$=str2,expected% || exit /b 1
+	set ^"expected=^&^^"^&^!line 2^!  line 4 ^^" & %@ASSERT.EQU:$$=str1,expected% || exit /b 1
+	set "expected= "    & %@ASSERT.EQU:$$=str2,expected% || exit /b 1
 	set "expected="     & %@ASSERT.EQU:$$=str3,expected% || exit /b 1
 	endlocal
 	endlocal
@@ -1929,39 +2001,39 @@ for /f "tokens=2*" %%1 in ("!%%@.args!") do for /f "tokens=1-2" %%P in (^""!@EXI
 %- SECTION 1  Collect Macro Arguments              -% ) else set %%@.args=!=! ^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@THROW
-	setlocal DisableDelayedExpansion
-	set "label=%0" & set ^"args=%*"
-	set "test=%label::.autotest.=%"
-	set "@tag=!@macro:~-4!"
-	set "@tag.expected=!=! "
-	set "params=!errlvl! errmsg"
-	setlocal EnableDelayedExpansion
-	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
-	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+:::.autotest.@THROW
+::	setlocal DisableDelayedExpansion
+::	set "label=%0" & set ^"args=%*"
+::	set "test=%label::.autotest.=%"
+::	set "@tag=!@macro:~-4!"
+::	set "@tag.expected=!=! "
+::	set "params=!errlvl! errmsg"
+::	setlocal EnableDelayedExpansion
+::	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+::	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 
-	echo(!LF!Before:
-	set "errlvl=5"
-	set "errmsg=this is an error message"
-	set "@EXIT.PREHOOK=.autotest.@EXIT.PREHOOK"
-	set "@EXIT.POSTHOOK=.autotest.@EXIT.POSTHOOK"
-	for %%v in (errlvl msg) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+::	echo(!LF!Before:
+::	set "errlvl=5"
+::	set "errmsg=this is an error message"
+::	set "@EXIT.PREHOOK=.autotest.@EXIT.PREHOOK"
+::	set "@EXIT.POSTHOOK=.autotest.@EXIT.POSTHOOK"
+::	for %%v in (errlvl msg) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
 
-	echo(!LF!Executing:  %%%test%%% %params%
-	%@macro% %params%
+::	echo(!LF!Executing:  %%%test%%% %params%
+::	%@macro% %params%
 
-	echo(Should not get here^!^!
-	exit /b 1
-:.autotest.@EXIT.PREHOOK [func] [errlvl]
-	setlocal DisableDelayedExpansion
-	echo.  Now in [%0]:
-	echo.  Exiting function %~1
-	exit /b 0
-:.autotest.@EXIT.POSTHOOK [script] [errlvl]
-	setlocal DisableDelayedExpansion
-	echo.  Now in [%0]:
-	echo.  Exiting script %~1 with errorlevel %2
-	exit /b 0
+::	echo(Should not get here^!^!
+::	exit /b 1
+:::.autotest.@EXIT.PREHOOK [func] [errlvl]
+::	setlocal DisableDelayedExpansion
+::	echo.  Now in [%0]:
+::	echo.  Exiting function %~1
+::	exit /b 0
+:::.autotest.@EXIT.POSTHOOK [script] [errlvl]
+::	setlocal DisableDelayedExpansion
+::	echo.  Now in [%0]:
+::	echo.  Exiting script %~1 with errorlevel %2
+::	exit /b 0
 :continue
 ::==============================================================================
 
