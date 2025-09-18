@@ -185,6 +185,12 @@ set ^"###EOL=^^^^^^^^^^^^^^^%LF%%LF%^%LF%%LF%^^^%LF%%LF%^%LF%%LF%^^^^^^^%LF%%LF%
 
 
 
+set "@LOCALDEPTH=0"
+set "@DDE=setlocal DisableDelayedExpansion & set /A "@LOCALDEPTH+=1""
+set "@EDE=setlocal EnableDelayedExpansion & set /A "@LOCALDEPTH+=1""
+set "@END=endlocal"
+
+
 
 
 ::==============================================================================
@@ -303,7 +309,7 @@ goto :continue
 
 
 ::==============================================================================
-:::.%@ARGS<dot>PARSE%      [var:in] [var:out] [str:extra_carets] [/preserve-quotes] [/debug]
+:::.%@ARGS<dot>PARSE%      [var:in] [var:out] [var|"str":extra_carets] [/preserve-quotes] [/debug]  (Expandable in DDE)
 :::  Splits a string into arguments, storing each in a uniquely-named variable.
 :::
 :::  Arguments must be separated by tabs, spaces, or linefeeds, and may be formatted as:
@@ -317,10 +323,11 @@ goto :continue
 :::    /flg4=                  Empty flag       --> %out[flg4]% -->
 :::    /flg5=""                Empty flag       --> %out[flg5]% -->
 :::    /3="override"           Positional arg   --> %out[3]%    --> override
+:::    /?="value"              Help flag        --> %out[help]% --> value
 :::
 :::  This set of arguments also results in the following special varaiables:
 :::
-:::  - %out%       --> out[1] out[2] out[3] out[flg1] ...
+:::  - %out%       --> out out.npos out[1] out[2] out[3] out[flg1] ...
 :::    List of generated argument variables.
 :::    If provided multiple flags with the same name, only the last value is kept:
 :::        /1="default"  "new value"  -->   %out[1]% --> new value
@@ -338,13 +345,17 @@ goto :continue
 :::  [/preserve-quotes]      If provided, doublequotes in values are preserved.
 :::                            If omitted, one layer of exterior quotes are
 :::                            stripped, and internal "" are replaced with ".
+:::  [/debug]                If provided, prints each argument as it is parsed.
 :::
 :::..Formatting:
-:::  Flag Arguments:
-:::     /flag[=value]        Flags start with '/' or '-'. Values start with '=' with ':'.
+:::  Flag Arguments:         Flags may not contain '!', '^', '~', '=', '%', '*' or errors may occur.
+:::     /flag[=value]        Flags start with '/' or '-'. Values start with '=' or ':'.
 :::     /flag[="value"]      Values with spaces or other special characters should be quoted.
 :::     /"flag"[=value]      Quoted flags may contain spaces, but this should be avoided.
-:::                          Flags may not contain '!', '^', '~', '=', '%', '*' or errors will occur.
+:::     /?[=value]           All occurrances of '?' in a flag are replaced with 'help' because '?' is treated as a path wildcard in for loops.
+:::                          Therefore, this flag is equivalent to '/help[=value]'
+:::
+:::
 :::
 :::  Positional Arguments:
 :::     value                Unquoted values may not contain whitespace.
@@ -356,22 +367,22 @@ goto :continue
 :::  Example usage:
 :::    Parse command line arguments:
 :::
-:::      setlocal DisableDelayedExpansion
 :::      set ^"args=/1="default value" %*"
-:::      setlocal EnableDelayedExpansion
 :::      %@ARGS.PARSE% args
 :::
 :::    Print all arguments:
 :::
-:::      for /f "delims=" %%v in ("!args!") do echo(%%v=[!%%v!]
+:::      setlocal EnableDelayedExpansion
+:::      for %%v in (%args:*npos=%) do echo(%%v=[!%%v!]
 :::
 :::    Print all positional arguments:
 :::
-:::      for /L %%i in (1,1,!args.npos!) do echo(args[%%i]=!args[%%i]!
+:::      setlocal EnableDelayedExpansion
+:::      for /L %%i in (1,1,%args.npos%) do echo(args[%%i]=!args[%%i]!
 :::
 :::    Check if the /? flag was specified:
 :::
-:::      if not "!args:args[?]=!"=="!args!" ( %= flag was specified =% )
+:::      if not "%args:args[help]=%"=="%args%" ( %= flag was specified =% )
 :::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
 for %%@ in (@ARGS.PARSE) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
@@ -380,106 +391,168 @@ for %%@ in (@ARGS.PARSE) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro
 ) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
 %-----------------------------------------------------------------------% %#EOL%
 %- SECTION 2  Macro Body                                               -% %#EOL%
-for /f "tokens=1-4" %%1 in ("!%%@.args!") do if not "%%~1"=="" for /f "tokens=1" %%2 in ("%%~2 %%~1") do for %%L in (^^^"%##LF%^^^") do ( %#EOL%
-	set "%%@.in=!%%~1!"%#EOL%
-	for %%v in (!%%2!) do set "%%v="%#EOL%
-	set "%%2="%#EOL%
-	set "%%2.npos=0"%#EOL%
-	if defined %%@.in ( %#EOL%
-		set "%%@.in=!%%@.in:#=#m!"%= Escape '#' so next line can use '#c' as a marker =%%#EOL%
-		%#@ARGS.SPLIT% %%@.in %%@.in "#c^^^^^^^"%= Produces a linefeed-separated list of arguments, with enough extra carets to survive 2x percent expansion in EDE, and '#c' markers for more carets later on =%%#EOL%
+if "!!"=="" (setlocal EnableDelayedExpansion ^& set "%%@.args=EDE !%%@.args!"%#EOL%
+) else setlocal EnableDelayedExpansion%#EOL%
+for /f "tokens=1-6" %%1 in ("!%%@.args!") do endlocal ^& set "%%@.args=" ^& if not "%%~2"=="" for /f "tokens=1" %%3 in ("%%~3 %%~2") do for %%L in (^^^"%##LF%^^^") do (%= This block is skipped if no input variable was provided =%%#EOL%
+	%= BASE SCOPE                                            =%%#EOL%
+	set "%%3=%%3 %%3.npos "%= Init var list                  =%%#EOL%
+	set "%%3.npos=0"%=        Init number of positional args =%%#EOL%
+	if defined %%2 (%= There is work to be done =%%#EOL%
+		if _%%4==_"%%~4" (%= Dequote     =%setlocal DisableDelayedExpansion ^& set "%%@.esc=_%%~4"%#EOL%
+		) else %=            Dereference =%setlocal EnableDelayedExpansion ^& set "%%@.esc=_!%%4!"%#EOL%
+		setlocal EnableDelayedExpansion%#EOL%
+		%= LOCAL SCOPE (2x deep)                             =%%#EOL%
+		if "%%1"=="EDE" (set "%%@.esc=!%%@.esc:^=^^^^^^^^!^^^^^^^^^^^^^^"!%= Carets must survive 3x percent expansion in EDE =%%#EOL%
+		) else           set "%%@.esc=!%%@.esc:^=^^^^!^^^^^^"!%=             Carets must survive 2x percent expansion in EDE =%%#EOL%
+		%#@ARGS.SPLIT% %%~2 %%@.in "!%%@.esc:~1!"%#EOL%
+		set "%%@.return="%= Will contain a sequence of 'set' statements =%%#EOL%
 		for /f tokens^^=*^^ delims^^=^^=:^^ ^^%TAB%^^ eol^^= %%a in ("!%%@.in!") do (%= For each argument... =%%#EOL%
-			set "%%@.arg=%%a"!%= First Percent Expansion =%%#EOL%
-			if not "%%~5"=="" echo(--^^^> arg=[!%%@.arg!]%#EOL%
+			set "%%@.arg=%%a"!%= EDE Percent Expansion #1 =%%#EOL%
+			if not "%%~6"=="" echo.--^^^> arg=[!%%@.arg!]%#EOL%
 			if not "!%%@.arg:~,1!"=="/" if not "!%%@.arg:~,1!"=="-" (%= Prepend numbered flag to positional arguments. =% %#EOL%
-				set /A "%%2.npos+=1"%#EOL%
-				set "%%@.arg=/!%%2.npos!=!%%@.arg!"%#EOL%
+				set /A "%%3.npos+=1"%#EOL%
+				set "%%@.arg=/!%%3.npos!=!%%@.arg!"%#EOL%
 			) %#EOL%
-			for /f tokens^^=1*^^ delims^^=^^=:^^ eol^^= %%b in ("!%%@.arg!") do (%= In arg, strip leading equals and colon, and split into a flag and value. Block does not run if arg contains only equals or colon. =%%#EOL%
-				for /f tokens^^=*^^ delims^^=/-^^ eol^^= %%b in ("%%b") do (%= In flag, strip leading '/' and '-'. Block does not run if flag contains only '/' or '-'. =%%#EOL%
-					if defined %%2 (set "%%2=!%%2:%%2[%%b]%%~L=!%%2[%%b]%%~L") else set "%%2=%%2[%%b]%%~L"%= Store flag =%%#EOL%
-					if "%%~4"=="" (set "%%@.val=%%~c") else set "%%@.val=%%c"!%= Second Percent Expansion =%%#EOL%
-					if defined %%@.val if "%%~4"=="" set ^"%%@.val=!%%@.val:""="!"%= Remove one layer of quotes =%%#EOL%
-					if defined %%@.val set "%%@.val=!%%@.val:#c=%%~3!"%#EOL%
-					if defined %%@.val set "%%@.val=!%%@.val:#m=#!"%#EOL%
-					set "%%2[%%b]=!%%@.val!"%= Store value =%%#EOL%
-					if not "%%~5"=="" echo(    flg=[%%b]^&echo(    val=[!%%@.val!]%#EOL%
+			for /f tokens^^=1*^^ delims^^=^^=:^^ eol^^= %%u in ("!%%@.arg!") do (%= In arg, strip leading equals and colon, and split into a flag and value. Block does not run if arg contains only equals or colon. =%%#EOL%
+				set "%%@.flg=%%u"!%#EOL%
+				for /f tokens^^=*^^ delims^^=/-^^ eol^^= %%u in ("!%%@.flg:?=help!") do (%= In flag, replace '?' with 'help', then strip leading '/' and '-'. Block does not run if flag contains only '/' or '-'. =%%#EOL%
+					set "%%3=!%%3:%%3[%%u] =!%%3[%%u] "%= Store flag =%%#EOL%
+					if "%%~5"=="" (%=           Remove 1 layer of doublequotes   =%%#EOL%
+						set "%%@.val=%%~v"!%=   EDE Percent Expansion #2 =%%#EOL%
+						if defined %%@.val set ^"%%@.val=!%%@.val:""="!"%#EOL%
+					) else (%=                  /preserve-quotes                 =%%#EOL%
+						set "%%@.val=%%v"!%=    EDE Percent Expansion #2 =%%#EOL%
+					)%#EOL%
+					set "%%@.return=!%%@.return!%%~Lset %%3[%%u]=!%%@.val!"%#EOL%
+					if not "%%~6"=="" echo.    flg=[%%u]^&echo.    val=[!%%@.val!]%#EOL%
 				)%#EOL%
 			)%#EOL%
-		) %#EOL%
-	) %#EOL%
-) %#EOL%
-%= Cleanup local variables =% %#EOL%
-set "%%@.args="%#EOL%
-set "%%@.in="%#EOL%
-set "%%@.val="%#EOL%
+		)%#EOL%
+		set "%%@.return=set %%3=!%%3!%%~Lset %%3.npos=!%%3.npos!!%%@.return!"%#EOL%
+		if not "%%~6"=="" echo.--^^^> return=[!%%@.return!]%#EOL%
+		for /f tokens^^=*^^ delims^^=^^ eol^^= %%r in ("endlocal%%~Lendlocal%%~L!%%@.return!") do if "!!"=="" (%#EOL%
+			%%r!%=   Return value to EDE; EDE Percent Expansion #3 =%%#EOL%
+		) else %%r%= Return value to DDE                           =%%#EOL%
+	)%#EOL%
+)%#EOL%
 %-----------------------------------------------------------------------% %#EOL%
-%- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"
+%- SECTION 1  Collect Macro Arguments              -% ) else set %%@.args=!=! ^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
 :.autotest.@ARGS.PARSE [str:arg] ...
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
-	set "@tag=!@macro:~-3!"
-	set "@tag.expected=!=!"
-	set "params=in out !extra_carets! !preserve_quotes! !debug!"
+	set "@tag=!@macro:~-4!"
+	set "@tag.expected=!=! "
+	set "params=in out extra_carets !preserve_quotes! !debug!"
 	setlocal EnableDelayedExpansion
 	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
 	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+	setlocal DisableDelayedExpansion
 
 	set ^"in=%#EOL%
-		^^!value^^!						%= out[1]        =%%#EOL%
-		"val ""^!with^!"" spaces"		%= out[2]        =%%#EOL%
+		^^!value!^^						%= out[1]        =%%#EOL%
+		"val ""^!with!^"" spaces"		%= out[2]        =%%#EOL%
 		=weird" "positional				%= out[3]        =%%#EOL%
 		""								%= out[4]        =%%#EOL%
 		"" /5="override 5"				%= out[5]        =%%#EOL%
 		/flg1=value						%= out[flg1]     =%%#EOL%
-		/flg2:"val ""^!with^!"" spaces"	%= out[flg2]     =%%#EOL%
+		/flg2:"val ""^!with!^"" spaces"	%= out[flg2]     =%%#EOL%
 		--flg3							%= out[flg3]     =%%#EOL%
-		/flg4=							%= out[flg4]     =%%#EOL%
+		/flg4=^^						%= out[flg4]     =%%#EOL%
 		--flg5:""						%= out[flg5]     =%%#EOL%
 		/"flag 6"						%= out["flag 6"] =%%#EOL%
 		/"flag 7"="value"				%= out["flag 7"] =%%#EOL%
-		/?								%= out[?]        =%%#EOL%
+		/?=value						%= out[help]     =%%#EOL%
 		/="no flag"						%= invalid       =%%#EOL%
 		/								%= invalid       =%%#EOL%
 		=								%= invalid       =%%#EOL%
 		:								%= invalid       =%%#EOL%
 	^"
 	set "out="
-	set "extra_carets="#c""
+	set "extra_carets=^"
 	set "preserve_quotes=/preserve-quotes"
 	set "debug=/debug"
 
-	echo(!LF!Before:
-	for %%v in (in) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined
+	%===================================%
+	setlocal EnableDelayedExpansion
+		echo(!LF!Before:
+		for %%v in (in) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined
+		echo(!LF!Executing:  %%%test%%% %params%
+	endlocal
+	setlocal EnableDelayedExpansion
+		%@macro% %params%
+		%@ASSERT.SUCCESS% || exit /b 1
+		%@ASSERT.EDE% || exit /b 1
+		%@ASSERT.UNDEFINED:$$=@ARGS.PARSE.esc% || exit /b 1
 
-	echo(!LF!Executing:  %%%test%%% %params%
-	%@macro% %params%
-	%@ASSERT.SUCCESS% || exit /b 1
+		setlocal EnableDelayedExpansion
+			echo(!LF!Result:
+			for %%v in (!out!) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined
+		endlocal
 
-	echo(!LF!Result:
-	for /f "delims=" %%v in ("out.npos!LF!!out!") do echo(%%v=[!%%v!]
+		setlocal DisableDelayedExpansion
+			echo.
+			set "expected=5"                                   & %@ASSERT.EQU:$$=out.npos,expected% || exit /b 1
+			set "expected=^^^!value^!^^"                       & %@ASSERT.EQU:$$=out[1],expected% || exit /b 1
+			set "expected="val ""^^^^^^!with^^!^^^^"" spaces"" & %@ASSERT.EQU:$$=out[2],expected% || exit /b 1
+			set "expected=weird" "positional"                  & %@ASSERT.EQU:$$=out[3],expected% || exit /b 1
+			set "expected="""                                  & %@ASSERT.EQU:$$=out[4],expected% || exit /b 1
+			set "expected="override 5""                        & %@ASSERT.EQU:$$=out[5],expected% || exit /b 1
+			set "expected=value"                               & %@ASSERT.EQU:$$=out[flg1],expected% || exit /b 1
+			set "expected="val ""^^^^^^!with^^!^^^^"" spaces"" & %@ASSERT.EQU:$$=out[flg2],expected% || exit /b 1
+			set "expected="                                    & %@ASSERT.EQU:$$=out[flg3],expected% || exit /b 1
+			set "expected=^^"                                  & %@ASSERT.EQU:$$=out[flg4],expected% || exit /b 1
+			set "expected="""                                  & %@ASSERT.EQU:$$=out[flg5],expected% || exit /b 1
+			set "expected="                                    & %@ASSERT.EQU:$$=out["flag 6"],expected% || exit /b 1
+			set "expected="value""                             & %@ASSERT.EQU:$$=out["flag 7"],expected% || exit /b 1
+			set "expected=value"                               & %@ASSERT.EQU:$$=out[help],expected% || exit /b 1
+		endlocal
+	endlocal
 
-	echo.
-	set "expected=5"                               & %@ASSERT.EQU:$$=out.npos,expected% || exit /b 1
-	set "expected=#c^!value#c^!"                   & %@ASSERT.EQU:$$=out[1],expected% || exit /b 1
-	set "expected="val ""#c^^!with#c^^!"" spaces"" & %@ASSERT.EQU:$$=out[2],expected% || exit /b 1
-	set "expected=weird" "positional"              & %@ASSERT.EQU:$$=out[3],expected% || exit /b 1
-	set "expected="""                              & %@ASSERT.EQU:$$=out[4],expected% || exit /b 1
-	set "expected="override 5""                    & %@ASSERT.EQU:$$=out[5],expected% || exit /b 1
-	set "expected=value"                           & %@ASSERT.EQU:$$=out[flg1],expected% || exit /b 1
-	set "expected="val ""#c^^!with#c^^!"" spaces"" & %@ASSERT.EQU:$$=out[flg2],expected% || exit /b 1
-	set "expected="                                & %@ASSERT.EQU:$$=out[flg3],expected% || exit /b 1
-	set "expected="                                & %@ASSERT.EQU:$$=out[flg4],expected% || exit /b 1
-	set "expected="""                              & %@ASSERT.EQU:$$=out[flg5],expected% || exit /b 1
-	set "expected="                                & %@ASSERT.EQU:$$=out["flag 6"],expected% || exit /b 1
-	set "expected="value""                         & %@ASSERT.EQU:$$=out["flag 7"],expected% || exit /b 1
-	set "expected="                                & %@ASSERT.EQU:$$=out[?],expected% || exit /b 1
+	%===================================%
+	setlocal EnableDelayedExpansion
+		echo(!LF!Before:
+		for %%v in (in) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined
+		echo(!LF!Executing:  %%%test%%% %params%
+	endlocal
+	setlocal DisableDelayedExpansion
+		%@macro% %params%
+		%@ASSERT.SUCCESS% || exit /b 1
+		%@ASSERT.DDE% || exit /b 1
+		%@ASSERT.UNDEFINED:$$=@ARGS.PARSE.esc% || exit /b 1
+
+		setlocal EnableDelayedExpansion
+			echo(!LF!Result:
+			for %%v in (!out!) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined
+		endlocal
+
+		setlocal DisableDelayedExpansion
+			echo.
+			set "expected=5"                                   & %@ASSERT.EQU:$$=out.npos,expected% || exit /b 1
+			set "expected=^^^!value^!^^"                       & %@ASSERT.EQU:$$=out[1],expected% || exit /b 1
+			set "expected="val ""^^^^^^!with^^!^^^^"" spaces"" & %@ASSERT.EQU:$$=out[2],expected% || exit /b 1
+			set "expected=weird" "positional"                  & %@ASSERT.EQU:$$=out[3],expected% || exit /b 1
+			set "expected="""                                  & %@ASSERT.EQU:$$=out[4],expected% || exit /b 1
+			set "expected="override 5""                        & %@ASSERT.EQU:$$=out[5],expected% || exit /b 1
+			set "expected=value"                               & %@ASSERT.EQU:$$=out[flg1],expected% || exit /b 1
+			set "expected="val ""^^^^^^!with^^!^^^^"" spaces"" & %@ASSERT.EQU:$$=out[flg2],expected% || exit /b 1
+			set "expected="                                    & %@ASSERT.EQU:$$=out[flg3],expected% || exit /b 1
+			set "expected=^^"                                  & %@ASSERT.EQU:$$=out[flg4],expected% || exit /b 1
+			set "expected="""                                  & %@ASSERT.EQU:$$=out[flg5],expected% || exit /b 1
+			set "expected="                                    & %@ASSERT.EQU:$$=out["flag 6"],expected% || exit /b 1
+			set "expected="value""                             & %@ASSERT.EQU:$$=out["flag 7"],expected% || exit /b 1
+			set "expected=value"                               & %@ASSERT.EQU:$$=out[help],expected% || exit /b 1
+		endlocal
+	endlocal
+
 	exit /b 0
 :continue
 ::==============================================================================
+
+
+
 
 
 
@@ -1135,6 +1208,213 @@ goto :continue
 
 
 
+
+
+
+
+::==============================================================================
+:::.%@ASSERT<dot>ENABLE%                                     (Expandable in DDE)
+:::.%@ASSERT<dot>DISABLE%                                    (Expandable in DDE)
+:::.%@ASSERT<dot>DEFINED:$$={var}% || exit /b 1              (Expandable in DDE)
+:::.%@ASSERT<dot>UNDEFINED:$$={var}% || exit /b 1            (Expandable in DDE)
+:::.%@ASSERT<dot>EQU:$$={var:1},{var:2}% || exit /b 1        (Expandable in DDE)
+:::.%@ASSERT<dot>NEQ:$$={var:1},{var:2}% || exit /b 1        (Expandable in DDE)
+:::.%@ASSERT<dot>SUCCESS% || exit /b 1                       (Expandable in DDE)
+:::.%@ASSERT<dot>FAILURE% || exit /b 1                       (Expandable in DDE)
+:::.%@ASSERT<dot>DDE% || exit /b 1                           (Expandable in DDE)
+:::.%@ASSERT<dot>EDE% || exit /b 1                           (Expandable in DDE)
+:::.%@ASSERT<dot>EXIST:$$={var:path}% || exit /b 1           (Expandable in DDE)
+:::.%@ASSERT<dot>NOTEXIST:$$={var:path}% || exit /b 1        (Expandable in DDE)
+::-------- BEGIN MACRO DEFINITION ----------------------------------------------
+for %%@ in (@ASSERT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else set ^"%%@.ENABLE=(set "%%@.DISABLE.ALL=")^"&^
+set ^"%%@.DISABLE=(set "%%@.DISABLE.ALL=1")^"&^
+set ^"%%@.DEFINED=(if defined %%@.DISABLE.ALL (call ) else setlocal EnableDelayedExpansion ^& (%#EOL%
+if defined $$ (%#EOL%
+	echo ---^^^> %%@.DEFINED:$$  Passed%#EOL%
+	echo(       $$=[!$$!]%#EOL%
+endlocal^&call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.DEFINED:$$  Failed%#EOL%
+	echo(       $$ is undefined%#EOL%
+endlocal^&call)%#EOL%
+))^"&^
+set ^"%%@.UNDEFINED=(if defined %%@.DISABLE.ALL (call ) else setlocal EnableDelayedExpansion ^& (%#EOL%
+if not defined $$ (%#EOL%
+	echo ---^^^> %%@.UNDEFINED:$$  Passed%#EOL%
+	echo(       $$ is undefined%#EOL%
+endlocal^&call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.UNDEFINED:$$  Failed%#EOL%
+	echo(       $$=[!$$!]%#EOL%
+endlocal^&call)%#EOL%
+))^"&^
+set ^"%%@.EQU=(if defined %%@.DISABLE.ALL (call ) else for /f "tokens=1-2 delims=, " %%1 in ("$$,%%@.var2,%%@.var1") do setlocal EnableDelayedExpansion ^& set "%%@.var1=VAR1 NOT FOUND" ^& set "%%@.var2=VAR2 NOT FOUND" ^& (%#EOL%
+if "!%%1!"=="!%%2!" (%#EOL%
+	echo ---^^^> %%@.EQU:$$  Passed%#EOL%
+	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
+	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
+endlocal^&call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.EQU:$$  Failed%#EOL%
+	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
+	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
+endlocal^&call)%#EOL%
+))^"&^
+set ^"%%@.NEQ=(if defined %%@.DISABLE.ALL (call ) else for /f "tokens=1-2 delims=, " %%1 in ("$$,%%@.var2,%%@.var1") do setlocal EnableDelayedExpansion ^& set "%%@.var1=VAR1 NOT FOUND" ^& set "%%@.var2=VAR2 NOT FOUND" ^& (%#EOL%
+if not "!%%1!"=="!%%2!" (%#EOL%
+	echo ---^^^> %%@.NEQ:$$  Passed%#EOL%
+	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
+	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
+endlocal^&call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.NEQ:$$  Failed%#EOL%
+	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
+	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
+endlocal^&call)%#EOL%
+))^"&^
+set ^"%%@.SUCCESS=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
+if not ERRORLEVEL 1 (%#EOL%
+	echo ---^^^> %%@.SUCCESS:  Passed%#EOL%
+call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.SUCCESS:  Failed%#EOL%
+call)%#EOL%
+))^"&^
+set ^"%%@.FAILURE=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
+if ERRORLEVEL 1 (%#EOL%
+	echo ---^^^> %%@.FAILURE:  Passed%#EOL%
+call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.FAILURE:  Failed%#EOL%
+call)%#EOL%
+))^"&^
+set ^"%%@.DDE=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
+if not "!!"=="" (%#EOL%
+	echo ---^^^> %%@.DDE:  Passed%#EOL%
+call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.DDE:  Failed%#EOL%
+call)%#EOL%
+))^"&^
+set ^"%%@.EDE=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
+if "!!"=="" (%#EOL%
+	echo ---^^^> %%@.EDE:  Passed%#EOL%
+call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.EDE:  Failed%#EOL%
+call)%#EOL%
+))^"&^
+set ^"%%@.EXIST=(if defined %%@.DISABLE.ALL (call ) else setlocal EnableDelayedExpansion ^& (%#EOL%
+if exist "!$$!" (%#EOL%
+	echo ---^^^> %%@.EXIST:$$  Passed%#EOL%
+	echo(       $$=[!$$!]%#EOL%
+endlocal^&call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.EXIST:$$  Failed%#EOL%
+	echo(       $$ is undefined%#EOL%
+endlocal^&call)%#EOL%
+))^"&^
+set ^"%%@.NOTEXIST=(if defined %%@.DISABLE.ALL (call ) else setlocal EnableDelayedExpansion ^& (%#EOL%
+if not exist "!$$!" (%#EOL%
+	echo ---^^^> %%@.NOTEXIST:$$  Passed%#EOL%
+	echo(       $$=[!$$!]%#EOL%
+endlocal^&call ) else 1^>^&2 (%#EOL%
+	echo ---^^^> %%@.NOTEXIST:$$  Failed%#EOL%
+	echo(       $$ is undefined%#EOL%
+endlocal^&call)%#EOL%
+))^"
+::-------- END MACRO DEFINITION ------------------------------------------------
+goto :continue
+:.autotest.@ASSERT.MULTI [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "empty="
+
+	%@ASSERT.DISABLE%            1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
+	(call) & %@ASSERT.DEFINED%   1>nul 2>&1 && (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
+	%@ASSERT.ENABLE%             1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.ENABLE    failed&exit /b 1) || (echo        Test: @ASSERT.ENABLE    passed&(call   ))
+	%@ASSERT.DEFINED:$$=test%    1>nul 2>&1 && (echo        Test: @ASSERT.DEFINED   passed&(call   )) || (echo        Test: @ASSERT.DEFINED   failed&exit /b 1)
+	%@ASSERT.UNDEFINED:$$=empty% 1>nul 2>&1 && (echo        Test: @ASSERT.UNDEFINED passed&(call   )) || (echo        Test: @ASSERT.UNDEFINED failed&exit /b 1)
+	%@ASSERT.EQU:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.EQU       failed&exit /b 1) || (echo        Test: @ASSERT.EQU       passed&(call   ))
+	%@ASSERT.NEQ:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.NEQ       passed&(call   )) || (echo        Test: @ASSERT.NEQ       failed&exit /b 1)
+	(call) & %@ASSERT.SUCCESS%   1>nul 2>&1 && (echo        Test: @ASSERT.SUCCESS   failed&exit /b 1) || (echo        Test: @ASSERT.SUCCESS   passed&(call   ))
+	(call) & %@ASSERT.FAILURE%   1>nul 2>&1 && (echo        Test: @ASSERT.FAILURE   passed&(call   )) || (echo        Test: @ASSERT.FAILURE   failed&exit /b 1)
+	%@ASSERT.DDE%                1>nul 2>&1 && (echo        Test: @ASSERT.DDE       passed&(call   )) || (echo        Test: @ASSERT.DDE       failed&exit /b 1)
+	%@ASSERT.EDE%                1>nul 2>&1 && (echo        Test: @ASSERT.EDE       failed&exit /b 1) || (echo        Test: @ASSERT.EDE       passed&(call   ))
+	%@ASSERT.EXIST:$$=COMSPEC%   1>nul 2>&1 && (echo        Test: @ASSERT.EXIST     passed&(call   )) || (echo        Test: @ASSERT.EXIST     failed&exit /b 1)
+	%@ASSERT.NOTEXIST:$$=COMSPEC%1>nul 2>&1 && (echo        Test: @ASSERT.NOTEXIST  failed&exit /b 1) || (echo        Test: @ASSERT.NOTEXIST  passed&(call   ))
+
+	setlocal EnableDelayedExpansion
+	%@ASSERT.DISABLE%            1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
+	(call) & %@ASSERT.DEFINED%   1>nul 2>&1 && (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
+	%@ASSERT.ENABLE%             1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.ENABLE    failed&exit /b 1) || (echo        Test: @ASSERT.ENABLE    passed&(call   ))
+	%@ASSERT.DEFINED:$$=test%    1>nul 2>&1 && (echo        Test: @ASSERT.DEFINED   passed&(call   )) || (echo        Test: @ASSERT.DEFINED   failed&exit /b 1)
+	%@ASSERT.UNDEFINED:$$=empty% 1>nul 2>&1 && (echo        Test: @ASSERT.UNDEFINED passed&(call   )) || (echo        Test: @ASSERT.UNDEFINED failed&exit /b 1)
+	%@ASSERT.EQU:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.EQU       failed&exit /b 1) || (echo        Test: @ASSERT.EQU       passed&(call   ))
+	%@ASSERT.NEQ:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.NEQ       passed&(call   )) || (echo        Test: @ASSERT.NEQ       failed&exit /b 1)
+	(call) & %@ASSERT.SUCCESS%   1>nul 2>&1 && (echo        Test: @ASSERT.SUCCESS   failed&exit /b 1) || (echo        Test: @ASSERT.SUCCESS   passed&(call   ))
+	(call) & %@ASSERT.FAILURE%   1>nul 2>&1 && (echo        Test: @ASSERT.FAILURE   passed&(call   )) || (echo        Test: @ASSERT.FAILURE   failed&exit /b 1)
+	%@ASSERT.DDE%                1>nul 2>&1 && (echo        Test: @ASSERT.DDE       failed&exit /b 1) || (echo        Test: @ASSERT.DDE       passed&(call   ))
+	%@ASSERT.EDE%                1>nul 2>&1 && (echo        Test: @ASSERT.EDE       passed&(call   )) || (echo        Test: @ASSERT.EDE       failed&exit /b 1)
+	%@ASSERT.EXIST:$$=COMSPEC%   1>nul 2>&1 && (echo        Test: @ASSERT.EXIST     passed&(call   )) || (echo        Test: @ASSERT.EXIST     failed&exit /b 1)
+	%@ASSERT.NOTEXIST:$$=COMSPEC%1>nul 2>&1 && (echo        Test: @ASSERT.NOTEXIST  failed&exit /b 1) || (echo        Test: @ASSERT.NOTEXIST  passed&(call   ))
+	exit /b 0
+:continue
+::==============================================================================
+
+
+
+
+
+::==============================================================================
+:::.%@CONSTS<dot>SPECIAL%                                    (Expandable in DDE)
+:::
+::: Defines Special Characters:
+:::  !CR!  --> Carriage Return (ASCII code 13, 0x0D)    (Expansion requires EDE)
+:::  !FF!  --> Form Feed       (ASCII code 12; 0x0C)    (Expansion requires EDE)
+:::  !BS!  --> Backspace       (ASCII code  8; 0x08)    (Expansion requires EDE)
+:::  !ESC! --> Escape          (ASCII code 27; 0x1B)    (Expansion requires EDE)
+:::
+::-------- BEGIN MACRO DEFINITION ----------------------------------------------
+for %%@ in (@CONSTS.SPECIAL) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else set ^"%%@=(%#EOL%
+	for %%v in (CR FF BS ESC) do set "%%v="%#EOL%
+	for /f "tokens=1-3 delims= " %%1 in ('"@echo off & copy /Z "%COMSPEC%" nul & cls & prompt $H$S$E & echo on & for %%# in (#) do rem"') do (%#EOL%
+		       if not defined CR (set "CR=%%1"%#EOL%
+		) else if not defined FF (set "FF=%%1"%#EOL%
+		) else if not defined BS (set "BS=%%1" ^& set "ESC=%%3"%#EOL%
+		)%#EOL%
+	)%#EOL%
+)^"
+::-------- END MACRO DEFINITION ------------------------------------------------
+goto :continue
+:.autotest.@CONSTS.SPECIAL [str:arg] ...
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-1!"
+	set "@tag.expected=)"
+	set "params="
+	setlocal EnableDelayedExpansion
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+
+	for %%v in (CR FF BS ESC) do set "%%v="
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+	%@ASSERT.SUCCESS% || exit /b 1
+
+	echo(!LF!Result:
+	%@ASSERT.DEFINED:$$=CR%
+	%@ASSERT.DEFINED:$$=FF%
+	%@ASSERT.DEFINED:$$=BS%
+	if defined ESC (echo(---^> @ASSERT.DEFINED:ESC  Passed) else (---^> @ASSERT.DEFINED:ESC  Failed&exit /b 1)
+
+	exit /b 0
+:continue
+::==============================================================================
+
+
+
+
+
+
 ::==============================================================================
 :::.%@STRING<dot>LOWER:$$=var%                                      (Embeddable)
 :::
@@ -1382,179 +1662,105 @@ goto :continue
 
 
 
+
 ::==============================================================================
-:::.%@ASSERT<dot>ENABLE%                                     (Expandable in DDE)
-:::.%@ASSERT<dot>DISABLE%                                    (Expandable in DDE)
-:::.%@ASSERT<dot>DEFINED:$$={var}% || exit /b 1              (Expandable in DDE)
-:::.%@ASSERT<dot>UNDEFINED:$$={var}% || exit /b 1            (Expandable in DDE)
-:::.%@ASSERT<dot>EQU:$$={var:1},{var:2}% || exit /b 1        (Expandable in DDE)
-:::.%@ASSERT<dot>NEQ:$$={var:1},{var:2}% || exit /b 1        (Expandable in DDE)
-:::.%@ASSERT<dot>SUCCESS% || exit /b 1                       (Expandable in DDE)
-:::.%@ASSERT<dot>FAILURE% || exit /b 1                       (Expandable in DDE)
-:::.%@ASSERT<dot>DDE% || exit /b 1                           (Expandable in DDE)
-:::.%@ASSERT<dot>EDE% || exit /b 1                           (Expandable in DDE)
+:::.%@VAR.PUSHPOP:$$=[var:1] [var:2] ... % ( ... )           (Expandable in DDE)
+:::.%@VAR.PUSHPOP.DDE:$$=[var:1] [var:2] ... % ( ... )       (Expandable in DDE)
+:::.%@VAR.PUSHPOP.EDE:$$=[var:1] [var:2] ... % ( ... )       (Expandable in DDE)
+:::.%#@VAR.PUSHPOP:$$=[var:1] [var:2] ... % ( ... )                 (Embeddable)
+:::
+:::  Collects the values of one or more variables, runs the adjacent
+:::  (code block), then restores the variables to their original values.
+:::
+:::  The original values are maintained through any form of context switch,
+:::  even if the following (code block) uses 'endlocal' or '(goto)'
+:::
+:::  Known limitations:
+:::  - It is not possible to restore variables containing linefeed (!LF!) in
+:::    DisableDelayedExpansion (DDE) environments. Only first line is restored.
+:::  - Carriage Return (!CR!) and other special characters may cause unexpected
+:::    results.
+:::
+:::  Special characters '^' and '!' are escaped for restoration in both DDE and
+:::  EDE environments. If the destination's EDE/DDE state is known in advance,
+:::  use VAR.PUSHPOP.EDE/DDE, which skips some irrelavant code.
+:::  VAR.PUSHPOP.DDE, in particular, is much faster, because it does not need to
+:::  'call set' to escape '!'.
+:::
 ::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@ASSERT) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
-) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else set ^"%%@.ENABLE=(set "%%@.DISABLE.ALL=")^"&^
-set ^"%%@.DISABLE=(set "%%@.DISABLE.ALL=1")^"&^
-set ^"%%@.DEFINED=(if defined %%@.DISABLE.ALL (call ) else setlocal EnableDelayedExpansion ^& (%#EOL%
-if defined $$ (%#EOL%
-	echo ---^^^> %%@.DEFINED:$$  Passed%#EOL%
-	echo(       $$=[!$$!]%#EOL%
-endlocal^&call ) else 1^>^&2 (%#EOL%
-	echo ---^^^> %%@.DEFINED:$$  Failed%#EOL%
-	echo(       $$ is undefined%#EOL%
-endlocal^&call)%#EOL%
-))^"&^
-set ^"%%@.UNDEFINED=(if defined %%@.DISABLE.ALL (call ) else setlocal EnableDelayedExpansion ^& (%#EOL%
-if not defined $$ (%#EOL%
-	echo ---^^^> %%@.UNDEFINED:$$  Passed%#EOL%
-	echo(       $$ is undefined%#EOL%
-endlocal^&call ) else 1^>^&2 (%#EOL%
-	echo ---^^^> %%@.UNDEFINED:$$  Failed%#EOL%
-	echo(       $$=[!$$!]%#EOL%
-endlocal^&call)%#EOL%
-))^"&^
-set ^"%%@.EQU=(if defined %%@.DISABLE.ALL (call ) else for /f "tokens=1-2 delims=, " %%1 in ("$$,%%@.var2,%%@.var1") do setlocal EnableDelayedExpansion ^& set "%%@.var1=VAR1 NOT FOUND" ^& set "%%@.var2=VAR2 NOT FOUND" ^& (%#EOL%
-if "!%%1!"=="!%%2!" (%#EOL%
-	echo ---^^^> %%@.EQU:$$  Passed%#EOL%
-	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
-	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
-endlocal^&call ) else 1^>^&2 (%#EOL%
-	echo ---^^^> %%@.EQU:$$  Failed%#EOL%
-	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
-	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
-endlocal^&call)%#EOL%
-))^"&^
-set ^"%%@.NEQ=(if defined %%@.DISABLE.ALL (call ) else for /f "tokens=1-2 delims=, " %%1 in ("$$,%%@.var2,%%@.var1") do setlocal EnableDelayedExpansion ^& set "%%@.var1=VAR1 NOT FOUND" ^& set "%%@.var2=VAR2 NOT FOUND" ^& (%#EOL%
-if not "!%%1!"=="!%%2!" (%#EOL%
-	echo ---^^^> %%@.NEQ:$$  Passed%#EOL%
-	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
-	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
-endlocal^&call ) else 1^>^&2 (%#EOL%
-	echo ---^^^> %%@.NEQ:$$  Failed%#EOL%
-	if defined %%1 (echo(       %%1=[!%%1!]) else echo(       %%1 is undefined%#EOL%
-	if defined %%2 (echo(       %%2=[!%%2!]) else echo(       %%2 is undefined%#EOL%
-endlocal^&call)%#EOL%
-))^"&^
-set ^"%%@.SUCCESS=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
-if not ERRORLEVEL 1 (%#EOL%
-	echo ---^^^> %%@.SUCCESS:  Passed%#EOL%
-call ) else 1^>^&2 (%#EOL%
-	echo ---^^^> %%@.SUCCESS:  Failed%#EOL%
-call)%#EOL%
-))^"&^
-set ^"%%@.FAILURE=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
-if ERRORLEVEL 1 (%#EOL%
-	echo ---^^^> %%@.FAILURE:  Passed%#EOL%
-call ) else 1^>^&2 (%#EOL%
-	echo ---^^^> %%@.FAILURE:  Failed%#EOL%
-call)%#EOL%
-))^"&^
-set ^"%%@.DDE=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
-if not "!!"=="" (%#EOL%
-	echo ---^^^> %%@.DDE:  Passed%#EOL%
-call ) else 1^>^&2 (%#EOL%
-	echo ---^^^> %%@.DDE:  Failed%#EOL%
-call)%#EOL%
-))^"&^
-set ^"%%@.EDE=(if defined %%@.DISABLE.ALL (call ) else (%#EOL%
-if "!!"=="" (%#EOL%
-	echo ---^^^> %%@.EDE:  Passed%#EOL%
-call ) else 1^>^&2 (%#EOL%
-	echo ---^^^> %%@.EDE:  Failed%#EOL%
-call)%#EOL%
-))^"
+for %%@ in (#@VAR.PUSHPOP) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined ##EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ##EOL.& exit /b 1
+) else if not defined ###LF (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ###LF.& exit /b 1
+) else 2>nul set ^"%%@=if not "$$"=="" for %%L in (^^^^^^^"%###LF%^^^^^^^") do (%##EOL%
+setlocal EnableDelayedExpansion %##EOL%
+set "%%@.return="%##EOL%
+set "%%@.ede="%##EOL%
+for %%v in ($$) do (%##EOL%
+	if not "$DDE$"=="" if defined %%v (%##EOL%
+		set "%%@.return=!%%@.return!%%~LD:set %%v=!%%v:%%~L=!"%##EOL%
+	) else set "%%@.return=!%%@.return!%%~LD:set %%v="%##EOL%
+	if not "$EDE$"=="" if defined %%v (%##EOL%
+		set "%%@.val=!%%v:#=#m!"%##EOL%
+		set ^^^"%%@.val=!%%@.val:"=#q!"%##EOL%
+		set "%%@.val=!%%@.val:%%~L=#l%%v=!"%##EOL%
+		set "%%@.ede=!%%@.ede!#l%%v=!%%@.val!"%##EOL%
+	) else set "%%@.ede=!%%@.ede!#l%%v="%##EOL%
+)%##EOL%
+if defined %%@.ede (%##EOL%
+	set "%%@.ede=!%%@.ede:^=^^^^!"%= Escape for 2x EDE percent expansion =%%##EOL%
+	call set "%%@.ede=%%%%@.ede:^!=#e^!%%"%##EOL%
+	set "%%@.ede=!%%@.ede:#e=^^^!"%= Escape for 2x EDE percent expansion =%%##EOL%
+	set %%@.var=^^^&for /f tokens^^^^=1*^^^^ delims^^^^=^^^^=^^^^ eol^^^^= %%u in ("!%%@.ede:#l=%%~L!") do (%= Substitute '#l' with excLFexc=%%##EOL%
+		if not "%%u"=="!%%@.var!" (set "%%@.var=%%u"^^^&set "%%@.return.ede=!%%@.return.ede!%%~LE:set %%u=%%v"!%##EOL%
+		) else set "%%@.return.ede=!%%@.return.ede!^!LF^!%%v"!%##EOL%
+	)%##EOL%
+	set ^^^"%%@.return.ede=!%%@.return.ede:#q="!"%##EOL%
+	set "%%@.return=!%%@.return!%%~L!%%@.return.ede:#m=#!"%##EOL%
+)%##EOL%
+%= Run external code block, then return values =% %##EOL%
+echo return=[!%%@.return!]%##EOL%
+)^^^&for /f tokens^^^^=1*^^^^ delims^^^^=:^^^^ eol^^^^= %%1 in ("1%%~L2%%~L3%%~L!%%@.return!") do ^
+%= STEP 1  End local scope                =% if "%%1"=="1" (endlocal%##EOL%
+%= STEP 3  Assign constants         =%) else if "%%1"=="3" (set "LF=%%~L"%##EOL%
+%= STEP 4D Set variables in DDE     =%) else if "%%1"=="D" (if not "!!"=="" %%2%##EOL%
+%= STEP 4E Set variables in EDE     =%) else if "%%1"=="E" (if "!!"=="" %%2!%##EOL%
+%= STEP 2  Run external code block  =%) else ^"
+set ^"@VAR.PUSHPOP=%#@VAR.PUSHPOP%"
+set ^"@VAR.PUSHPOP.DDE=%#@VAR.PUSHPOP:$EDE$=%"
+set ^"@VAR.PUSHPOP.EDE=%#@VAR.PUSHPOP:$DDE$=%"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ASSERT.{all} [str:arg] ...
+:.autotest.@VAR.PUSHPOP [str:arg] ...
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
-	set "empty="
-
-	%@ASSERT.DISABLE%            1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
-	(call) & %@ASSERT.DEFINED%   1>nul 2>&1 && (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
-	%@ASSERT.ENABLE%             1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.ENABLE    failed&exit /b 1) || (echo        Test: @ASSERT.ENABLE    passed&(call   ))
-	%@ASSERT.DEFINED:$$=test%    1>nul 2>&1 && (echo        Test: @ASSERT.DEFINED   passed&(call   )) || (echo        Test: @ASSERT.DEFINED   failed&exit /b 1)
-	%@ASSERT.UNDEFINED:$$=empty% 1>nul 2>&1 && (echo        Test: @ASSERT.UNDEFINED passed&(call   )) || (echo        Test: @ASSERT.UNDEFINED failed&exit /b 1)
-	%@ASSERT.EQU:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.EQU       failed&exit /b 1) || (echo        Test: @ASSERT.EQU       passed&(call   ))
-	%@ASSERT.NEQ:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.NEQ       passed&(call   )) || (echo        Test: @ASSERT.NEQ       failed&exit /b 1)
-	(call) & %@ASSERT.SUCCESS%   1>nul 2>&1 && (echo        Test: @ASSERT.SUCCESS   failed&exit /b 1) || (echo        Test: @ASSERT.SUCCESS   passed&(call   ))
-	(call) & %@ASSERT.FAILURE%   1>nul 2>&1 && (echo        Test: @ASSERT.FAILURE   passed&(call   )) || (echo        Test: @ASSERT.FAILURE   failed&exit /b 1)
-	%@ASSERT.DDE%                1>nul 2>&1 && (echo        Test: @ASSERT.DDE       passed&(call   )) || (echo        Test: @ASSERT.DDE       failed&exit /b 1)
-	%@ASSERT.EDE%                1>nul 2>&1 && (echo        Test: @ASSERT.EDE       failed&exit /b 1) || (echo        Test: @ASSERT.EDE       passed&(call   ))
-
-	setlocal EnableDelayedExpansion
-	%@ASSERT.DISABLE%            1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
-	(call) & %@ASSERT.DEFINED%   1>nul 2>&1 && (echo        Test: @ASSERT.DISABLE   passed&(call   )) || (echo        Test: @ASSERT.DISABLE   failed&exit /b 1)
-	%@ASSERT.ENABLE%             1>nul 2>&1 & if defined @ASSERT.DISABLE.ALL (echo        Test: @ASSERT.ENABLE    failed&exit /b 1) || (echo        Test: @ASSERT.ENABLE    passed&(call   ))
-	%@ASSERT.DEFINED:$$=test%    1>nul 2>&1 && (echo        Test: @ASSERT.DEFINED   passed&(call   )) || (echo        Test: @ASSERT.DEFINED   failed&exit /b 1)
-	%@ASSERT.UNDEFINED:$$=empty% 1>nul 2>&1 && (echo        Test: @ASSERT.UNDEFINED passed&(call   )) || (echo        Test: @ASSERT.UNDEFINED failed&exit /b 1)
-	%@ASSERT.EQU:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.EQU       failed&exit /b 1) || (echo        Test: @ASSERT.EQU       passed&(call   ))
-	%@ASSERT.NEQ:$$=test,empty%  1>nul 2>&1 && (echo        Test: @ASSERT.NEQ       passed&(call   )) || (echo        Test: @ASSERT.NEQ       failed&exit /b 1)
-	(call) & %@ASSERT.SUCCESS%   1>nul 2>&1 && (echo        Test: @ASSERT.SUCCESS   failed&exit /b 1) || (echo        Test: @ASSERT.SUCCESS   passed&(call   ))
-	(call) & %@ASSERT.FAILURE%   1>nul 2>&1 && (echo        Test: @ASSERT.FAILURE   passed&(call   )) || (echo        Test: @ASSERT.FAILURE   failed&exit /b 1)
-	%@ASSERT.DDE%                1>nul 2>&1 && (echo        Test: @ASSERT.DDE       failed&exit /b 1) || (echo        Test: @ASSERT.DDE       passed&(call   ))
-	%@ASSERT.EDE%                1>nul 2>&1 && (echo        Test: @ASSERT.EDE       passed&(call   )) || (echo        Test: @ASSERT.EDE       failed&exit /b 1)
-	exit /b 0
-:continue
-::==============================================================================
-
-
-
-
-
-::==============================================================================
-:::.%@CONSTS<dot>SPECIAL%                                    (Expandable in DDE)
-:::
-::: Defines Special Characters:
-:::  !CR!  --> Carriage Return (ASCII code 13, 0x0D)    (Expansion requires EDE)
-:::  !FF!  --> Form Feed       (ASCII code 12; 0x0C)    (Expansion requires EDE)
-:::  !BS!  --> Backspace       (ASCII code  8; 0x08)    (Expansion requires EDE)
-:::  !ESC! --> Escape          (ASCII code 27; 0x1B)    (Expansion requires EDE)
-:::
-::-------- BEGIN MACRO DEFINITION ----------------------------------------------
-for %%@ in (@CONSTS.SPECIAL) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
-) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
-) else set ^"%%@=(%#EOL%
-	for %%v in (CR FF BS ESC) do set "%%v="%#EOL%
-	for /f "tokens=1-3 delims= " %%1 in ('"@echo off & copy /Z "%COMSPEC%" nul & cls & prompt $H$S$E & echo on & for %%# in (#) do rem"') do (%#EOL%
-		       if not defined CR (set "CR=%%1"%#EOL%
-		) else if not defined FF (set "FF=%%1"%#EOL%
-		) else if not defined BS (set "BS=%%1" ^& set "ESC=%%3"%#EOL%
-		)%#EOL%
-	)%#EOL%
-)^"
-::-------- END MACRO DEFINITION ------------------------------------------------
-goto :continue
-:.autotest.@CONSTS.SPECIAL [str:arg] ...
-	setlocal DisableDelayedExpansion
-	set "label=%0" & set ^"args=%*"
-	set "test=%label::.autotest.=%"
-	set "@tag=!@macro:~-1!"
-	set "@tag.expected=)"
-	set "params="
+	set "@tag=!@macro:~-5!"
+	set "@tag.expected=else "
+	set "params=str1 str2"
 	setlocal EnableDelayedExpansion
 	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
 	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 
-	for %%v in (CR FF BS ESC) do set "%%v="
+	echo(!LF!Before:
+	set "str2=&^"
+	set ^"str1=^&^^"^&^!line 2^!!LF!!LF!line 4!LF!^^"
+	for %%v in (str1 str2) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
 
-	echo(!LF!Executing:  %%%test%%% %params%
-	%@macro% %params%
+	echo(!LF!Executing:  %%%test%:$$=!params!%%
+	%@macro:$$=!params!% ( echo In section 1 )
 	%@ASSERT.SUCCESS% || exit /b 1
 
 	echo(!LF!Result:
-	%@ASSERT.DEFINED:$$=CR%
-	%@ASSERT.DEFINED:$$=FF%
-	%@ASSERT.DEFINED:$$=BS%
-	if defined ESC (echo(---^> @ASSERT.DEFINED:ESC  Passed) else (---^> @ASSERT.DEFINED:ESC  Failed&exit /b 1)
+	for %%v in (str1 str2) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
 
 	exit /b 0
 :continue
-::==============================================================================
+
+
+
+
+
+
 
 
 
