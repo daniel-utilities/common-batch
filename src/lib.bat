@@ -267,7 +267,7 @@ set "%%@.numq="%##EOL%
 set ^"@ARGS.SPLIT=%#@ARGS.SPLIT%"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARGS.SPLIT [str:arg] ...
+:.autotest.@ARGS.SPLIT
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -439,7 +439,7 @@ for /f "tokens=1-6" %%1 in ("!%%@.args!") do endlocal ^& set "%%@.args=" ^& if n
 %- SECTION 1  Collect Macro Arguments              -% ) else set %%@.args=!=! ^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARGS.PARSE [str:arg] ...
+:.autotest.@ARGS.PARSE
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -599,7 +599,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 %- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.DEFINE [str:arg] ...
+:.autotest.@ARRAY.DEFINE
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -656,7 +656,7 @@ set "%%@.args="%#EOL%
 %= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.DELETE [str:arg] ...
+:.autotest.@ARRAY.DELETE
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -728,7 +728,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 %= SECTION 1  Collect Macro Arguments               =% ) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.GET [str:arg] ...
+:.autotest.@ARRAY.GET
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -792,7 +792,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 %= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.SET [str:arg] ...
+:.autotest.@ARRAY.SET
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -845,7 +845,7 @@ for %%@ in (@ARRAY.FOREACH) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Ma
 ) else 2>nul set ^"%%@=for %%v in ($$) do for /L %%i in (1,1,!%%v[#]!) do ^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.FOREACH [str:arg] ...
+:.autotest.@ARRAY.FOREACH
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -909,7 +909,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 %= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.CONTAINS [str:arg] ...
+:.autotest.@ARRAY.CONTAINS
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -987,7 +987,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 %= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.APPEND [str:arg] ...
+:.autotest.@ARRAY.APPEND
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -1076,7 +1076,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 %= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.INSERT [str:arg] ...
+:.autotest.@ARRAY.INSERT
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -1166,7 +1166,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 %= SECTION 1  Collect Macro Arguments                =%) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ARRAY.REMOVE [str:arg] ...
+:.autotest.@ARRAY.REMOVE
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -1318,7 +1318,7 @@ endlocal^&call)%#EOL%
 ))^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@ASSERT.MULTI [str:arg] ...
+:.autotest.@ASSERT.MULTI
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -1383,7 +1383,7 @@ for %%@ in (@CONSTS.SPECIAL) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: M
 )^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@CONSTS.SPECIAL [str:arg] ...
+:.autotest.@CONSTS.SPECIAL
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -1423,7 +1423,7 @@ for %%@ in (@STRING.LOWER) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Mac
 ) else 2>nul set ^"%%@=for %%v in ($$) do if defined %%v for %%c in (a b c d e f g h i j k l m n o p q r s t u v w x y z) do set "%%v=!%%v:%%c=%%c!"^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@STRING.LOWER [str:arg] ...
+:.autotest.@STRING.LOWER
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -1473,7 +1473,7 @@ for %%@ in (#@STRING.LENGTH) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: M
 set ^"@STRING.LENGTH=%#@STRING.LENGTH%"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@STRING.LENGTH [str:arg] ...
+:.autotest.@STRING.LENGTH
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -1549,7 +1549,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 %- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@STRING.CONCAT [str:arg] ...
+:.autotest.@STRING.CONCAT
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -1627,7 +1627,7 @@ if defined %%@.err (set "%%@.err=" ^& call) else (call )%#EOL%
 %- SECTION 1  Collect Macro Arguments               -% ) else set %%@.args=!=!^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@STRING.SPLIT [str:arg] ...
+:.autotest.@STRING.SPLIT
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
@@ -1668,9 +1668,28 @@ goto :continue
 :::.%@VAR.PUSHPOP.DDE:$$=[var:1] [var:2] ... % ( ... )       (Expandable in DDE)
 :::.%@VAR.PUSHPOP.EDE:$$=[var:1] [var:2] ... % ( ... )       (Expandable in DDE)
 :::.%#@VAR.PUSHPOP:$$=[var:1] [var:2] ... % ( ... )                 (Embeddable)
+:::.%@RETURN:$$=[var:1] [var:2] ... %                        (Expandable in DDE)
+:::.%@RETURN.DDE:$$=[var:1] [var:2] ... %                    (Expandable in DDE)
+:::.%@RETURN.EDE:$$=[var:1] [var:2] ... %                    (Expandable in DDE)
+:::.%@EXIT:$$=[var:1] [var:2] ... %                          (Expandable in DDE)
 :::
-:::  Collects the values of one or more variables, runs the adjacent
-:::  (code block), then restores the variables to their original values.
+:::  @VAR.PUSHPOP:
+:::    Collects the values of one or more variables, runs the adjacent
+:::    (code block), then restores the variables to their original values.
+:::
+:::  @RETURN:
+:::    Exits the current 'call' function, including all 'setlocal' levels since
+:::    the start of the function, returning the variables to the caller's scope.
+:::    If expanded at the base level of a script, exits the script.
+:::
+:::  @EXIT:
+:::    Exits the entire 'call' stack up to and including the current script,
+:::    returning the variables to the parent script or console.
+:::    - If %@EXIT.PREHOOK% is a valid label, calls it before exiting the
+:::      top-level call.
+:::    - If %@EXIT.POSTHOOK% is a valid label, calls it before exiting the
+:::      base-level script.
+:::
 :::
 :::  The original values are maintained through any form of context switch,
 :::  even if the following (code block) uses 'endlocal' or '(goto)'
@@ -1678,10 +1697,13 @@ goto :continue
 :::  The value of ERRORLEVEL is also persisted.
 :::
 :::  Known limitations:
-:::  - It is not possible to restore variables containing linefeed (!LF!) in
-:::    DisableDelayedExpansion (DDE) environments. Only first line is restored.
+:::  - When restoring a value within DisableDelayedExpansion (DDE) environments,
+:::    linefeeds (!LF!) are replaced with spaces.
 :::  - Carriage Return (!CR!) and other special characters may cause unexpected
 :::    results.
+:::  - Assigns ERRORLEVEL=1 for all ERRORLEVEL >= 1.
+:::  - EXIT can only exit a max of 32 nested calls, so may not be suitable for
+:::    use in deeply recursive functions.
 :::
 :::  Special characters '^' and '!' are escaped for restoration in both DDE and
 :::  EDE environments. If the destination's EDE/DDE state is known in advance,
@@ -1693,14 +1715,14 @@ goto :continue
 for %%@ in (#@VAR.PUSHPOP) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
 ) else if not defined ##EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ##EOL.& exit /b 1
 ) else if not defined ###LF (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ###LF.& exit /b 1
-) else 2>nul set ^"%%@=if not "$$"=="" for %%L in (^^^^^^^"%###LF%^^^^^^^") do (%##EOL%
+) else 2>nul set ^"%%@=for %%L in (^^^^^^^"%###LF%^^^^^^^") do (%##EOL%
 if ERRORLEVEL 1 (setlocal EnableDelayedExpansion ^^^& set "%%@.errlvl=1"%##EOL%
 ) else setlocal EnableDelayedExpansion ^^^& set "%%@.errlvl=0"%##EOL%
 set "%%@.return="%##EOL%
 set "%%@.ede="%##EOL%
 for %%v in ($$) do (%##EOL%
 	if not "$DDE$"=="" if defined %%v (%##EOL%
-		set "%%@.return=!%%@.return!%%~LD:set %%v=!%%v:%%~L=!"%##EOL%
+		set "%%@.return=!%%@.return!%%~LD:set %%v=!%%v:%%~L= !"%##EOL%
 	) else set "%%@.return=!%%@.return!%%~LD:set %%v="%##EOL%
 	if not "$EDE$"=="" if defined %%v (%##EOL%
 		set "%%@.val=!%%v:#=#m!"%##EOL%
@@ -1721,8 +1743,7 @@ if defined %%@.ede (%##EOL%
 	set "%%@.return=!%%@.return!%%~L!%%@.return.ede:#m=#!"%##EOL%
 )%##EOL%
 %= Run external code block, then return values =% %##EOL%
-echo return=[!%%@.return!]%##EOL%
-)^^^&for /f tokens^^^^=1*^^^^ delims^^^^=:^^^^ eol^^^^= %%1 in ("1%%~L2%%~L3%%~L!%%@.return!%%~L5:!%%@.errlvl!") do ^
+)^^^&for /f tokens^^^^=1*^^^^ delims^^^^=:^^^^ eol^^^^= %%1 in ("1%%~L2:!%%@.errlvl!%%~L3%%~L!%%@.return!%%~L5:!%%@.errlvl!") do ^
 %= STEP 1  End local scope                =% if "%%1"=="1" (endlocal^^^&set "%%@.errlvl="%##EOL%
 %= STEP 3  Assign constants         =%) else if "%%1"=="3" (set "LF=%%~L"%##EOL%
 %= STEP 4D Set variables in DDE     =%) else if "%%1"=="D" (if not "!!"=="" %%2%##EOL%
@@ -1732,37 +1753,217 @@ echo return=[!%%@.return!]%##EOL%
 set ^"@VAR.PUSHPOP=%#@VAR.PUSHPOP%"
 set ^"@VAR.PUSHPOP.DDE=%#@VAR.PUSHPOP:$EDE$=%"
 set ^"@VAR.PUSHPOP.EDE=%#@VAR.PUSHPOP:$DDE$=%"
+set ^"@RETURN=%#@VAR.PUSHPOP%(goto 2^>nul)"
+set ^"@RETURN.DDE=%#@VAR.PUSHPOP:$EDE$=%(goto) 2^>nul"
+set ^"@RETURN.EDE=%#@VAR.PUSHPOP:$DDE$=%(goto) 2^>nul"
+set ^"@EXIT=%#@VAR.PUSHPOP%(%#EOL%
+	setlocal DisableDelayedExpansion%#EOL%
+	call set "@EXIT.context=%%~0"%=                                              Arg 0 contains either the call label or the script file =%%#EOL%
+	setlocal EnableDelayedExpansion%#EOL%
+	for /f "tokens=1-2" %%P in (^""!@EXIT.PREHOOK!" "!@EXIT.POSTHOOK!"^") do (%= Use the values of PREHOOK/POSTHOOK from the time this macro was expanded =%%#EOL%
+		if not "%%~P"=="" call :%%~P "!@EXIT.context!" %%2%=                     Call @EXIT.PREHOOK [func] [errlvl] =%%#EOL%
+		if "!@EXIT.context:~,1!"==":" (goto) 2^>nul ^& set "@EXIT.context="%=    If inside a function, exit one call level. Else leave context defined. =%%#EOL%
+		for /L %%i in (1,1,31) do if not defined @EXIT.context (%=               When context is defined, we are in the base script context. =%%#EOL%
+			setlocal DisableDelayedExpansion%#EOL%
+			call set "@EXIT.context=%%~0"%#EOL%
+			setlocal EnableDelayedExpansion%#EOL%
+			if "!@EXIT.context:~,1!"==":" (goto) 2^>nul ^& set "@EXIT.context="%#EOL%
+		)%=                                                                      Now at the base of the script =%%#EOL%
+		if not "%%~Q"=="" call :%%~Q "!@EXIT.context!" %%2%=                     Call @EXIT.POSTHOOK [script] [errlvl] =%%#EOL%
+		set "@EXIT.context="%#EOL%
+		(goto) 2^>nul%=                                                          One final exit to leave the script. =%%#EOL%
+	)%#EOL%
+)^"
 ::-------- END MACRO DEFINITION ------------------------------------------------
 goto :continue
-:.autotest.@VAR.PUSHPOP [str:arg] ...
+:.autotest.@VAR.PUSHPOP
 	setlocal DisableDelayedExpansion
 	set "label=%0" & set ^"args=%*"
 	set "test=%label::.autotest.=%"
 	set "@tag=!@macro:~-5!"
 	set "@tag.expected=else "
-	set "params=str1 str2"
+	set "params=str1 str2 str3"
 	setlocal EnableDelayedExpansion
 	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
 	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
 
 	echo(!LF!Before:
-	set "str2=&^"
 	set ^"str1=^&^^"^&^!line 2^!!LF!!LF!line 4!LF!^^"
-	for %%v in (str1 str2) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	set "str2=!LF!"
+	set "str3="
+	for %%v in (str1 str2 str3) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
 
 	echo(!LF!Executing:  %%%test%:$$=!params!%%
-	%@macro:$$=!params!% ( echo In section 1 )
+	(call ) & %@macro:$$=!params!% (
+		echo.  Now in section 1
+		setlocal EnableDelayedExpansion
+		for %%v in (str1 str2 str3) do set "%%v=%%v set from internal code block"
+	)
 	%@ASSERT.SUCCESS% || exit /b 1
+	%@ASSERT.EDE% || exit /b 1
+	%@ASSERT.UNDEFINED:$$=!test!.return% || exit /b 1
+	%@ASSERT.UNDEFINED:$$=!test!.errlvl% || exit /b 1
 
+	setlocal EnableDelayedExpansion
 	echo(!LF!Result:
-	for %%v in (str1 str2) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	for %%v in (str1 str2 str3) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	echo.
+	set ^"expected=^&^^"^&^!line 2^!!LF!!LF!line 4!LF!^^" & %@ASSERT.EQU:$$=str1,expected% || exit /b 1
+	set "expected=!LF!" & %@ASSERT.EQU:$$=str2,expected% || exit /b 1
+	set "expected="     & %@ASSERT.EQU:$$=str3,expected% || exit /b 1
+	endlocal
+	endlocal
 
+	echo(!LF!Before:
+	set ^"str1=^&^^"^&^!line 2^!!LF!!LF!line 4!LF!^^"
+	set "str2=!LF!"
+	set "str3="
+	for %%v in (str1 str2 str3) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+
+	echo(!LF!Executing:  %%%test%:$$=!params!%%
+	(call) & %@macro:$$=!params!% (
+		echo.  Now in section 1
+		setlocal DisableDelayedExpansion
+		for %%v in (str1 str2 str3) do set "%%v=%%v set from internal code block"
+	)
+	%@ASSERT.FAILURE% || exit /b 1
+	%@ASSERT.DDE% || exit /b 1
+	%@ASSERT.UNDEFINED:$$=!test!.return% || exit /b 1
+	%@ASSERT.UNDEFINED:$$=!test!.errlvl% || exit /b 1
+
+	setlocal EnableDelayedExpansion
+	echo(!LF!Result:
+	for %%v in (str1 str2 str3) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+	echo.
+	set ^"expected=^&^^"^&^!line 2^!line 4^^" & %@ASSERT.EQU:$$=str1,expected% || exit /b 1
+	set "expected="     & %@ASSERT.EQU:$$=str2,expected% || exit /b 1
+	set "expected="     & %@ASSERT.EQU:$$=str3,expected% || exit /b 1
+	endlocal
+	endlocal
+	exit /b 0
+:::.autotest.@EXIT
+::	setlocal DisableDelayedExpansion
+::	set "label=%0" & set ^"args=%*"
+::	set "test=%label::.autotest.=%"
+::	set "@tag=!@macro:~-1!"
+::	set "@tag.expected=)"
+::	set "params=str1 str2 str3"
+::	setlocal EnableDelayedExpansion
+::	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+::	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+::	echo(!LF!Before:
+::	set ^"str1=^&^^"^&^!line 2^!!LF!!LF!line 4!LF!^^"
+::	set "str2=!LF!"
+::	set "str3="
+::	set "@EXIT.PREHOOK=.autotest.@EXIT.PREHOOK"
+::	set "@EXIT.POSTHOOK=.autotest.@EXIT.POSTHOOK"
+::	for %%v in (str1 str2 str3) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+::	echo(!LF!Executing:  %%%test%:$$=!params!%%
+::	%@macro:$$=!params!%
+::	echo(Should not get here^!^!
+::	exit /b 1
+:::.autotest.@EXIT.PREHOOK [func] [errlvl]
+::	setlocal DisableDelayedExpansion
+::	echo.  Now in [%0]:
+::	echo.  Exiting function %~1
+::	exit /b 0
+:::.autotest.@EXIT.POSTHOOK [script] [errlvl]
+::	setlocal DisableDelayedExpansion
+::	echo.  Now in [%0]:
+::	echo.  Exiting script %~1 with errorlevel %2
+::	exit /b 0
+:continue
+::==============================================================================
+
+
+
+
+::==============================================================================
+:::.%@THROW% {errlvl} [var|"str":msg]                        (Expandable in DDE)
+:::
+::: Prints an error message, then exits the entire 'call' stack up to and
+::: including the current script, and sets ERRORLEVEL.
+::: - If %@EXIT.PREHOOK% is a valid label, calls it before exiting the
+:::   top-level call.
+::: - If %@EXIT.POSTHOOK% is a valid label, calls it before exiting the
+:::   base-level script.
+:::
+::-------- BEGIN MACRO DEFINITION ----------------------------------------------
+for %%@ in (@THROW) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires DisableDelayedExpansion.& exit /b 1
+) else if not defined #EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires #EOL.& exit /b 1
+) else 2>nul set ^"%%@=for %%# in (1 2) do if %%#==2 (%#EOL%
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 2  Macro Body                                               -% %#EOL%
+if "!!"=="" (setlocal EnableDelayedExpansion^&set "%%@.args=EDE !%%@.args!"%#EOL%
+) else setlocal EnableDelayedExpansion%#EOL%
+for /f "tokens=2*" %%1 in ("!%%@.args!") do for /f "tokens=1-2" %%P in (^""!@EXIT.PREHOOK!" "!@EXIT.POSTHOOK!"^") do (%= Use the values of PREHOOK/POSTHOOK from the time this macro was expanded =%%#EOL%
+	endlocal^&set "%%@.args="%#EOL%
+	%=                                           Print top-level error msg =%%#EOL%
+	if _%%2==_"%%~2" (%= dequote =%setlocal DisableDelayedExpansion^&set "%%@.msg=%%~2"%#EOL%
+	) else %=        dereference =%setlocal EnableDelayedExpansion^&set "%%@.msg=!%%2!"%#EOL%
+	if not defined %%@.msg set "%%@.msg=%%~1"%#EOL%
+	setlocal EnableDelayedExpansion%#EOL%
+	1^>^&2 echo(==================================================%#EOL%
+	1^>^&2 echo([%%@] Error: !%%@.msg!%#EOL%
+	endlocal%#EOL%
+	%=                                           Exit script =%%#EOL%
+	setlocal DisableDelayedExpansion%#EOL%
+	call set "%%@.context=%%~0"%=                                        Arg 0 contains either the call label or the script file =%%#EOL%
+	setlocal EnableDelayedExpansion%#EOL%
+	1^>^&2 echo([%%@] ---^^^> In: !%%@.context!%#EOL%
+	if not "%%~P"=="" call :%%~P "!%%@.context!" %%1%=                   Call @EXIT.PREHOOK [func] [errlvl] =%%#EOL%
+	if "!%%@.context:~,1!"==":" (goto) 2^>nul ^& set "%%@.context="%=    If inside a function, exit one call level. Else leave context defined. =%%#EOL%
+	for /L %%i in (1,1,31) do if not defined %%@.context (%=             When context is defined, we are in the base script context. =%%#EOL%
+		setlocal DisableDelayedExpansion%#EOL%
+		call set "%%@.context=%%~0"%#EOL%
+		setlocal EnableDelayedExpansion%#EOL%
+		1^>^&2 echo([%%@] ---^^^> In: !%%@.context!%#EOL%
+		if "!%%@.context:~,1!"==":" (goto) 2^>nul ^& set "%%@.context="%#EOL%
+	)%=                                                                  Now at the base of the script =%%#EOL%
+	if not "%%~Q"=="" call :%%~Q "!%%@.context!" %%1%=                   Call @EXIT.POSTHOOK [script] [errlvl] =%%#EOL%
+	set "%%@.context="%#EOL%
+	(goto) 2^>nul%=                                                      One final exit to leave the script. =%%#EOL%
+	if %%1 equ 0 (call ) else if %%1 equ 1 (call) else cmd /c exit %%1%= Set ERRORLEVEL =%%#EOL%
+)%#EOL%
+%-----------------------------------------------------------------------% %#EOL%
+%- SECTION 1  Collect Macro Arguments              -% ) else set %%@.args=!=! ^"
+::-------- END MACRO DEFINITION ------------------------------------------------
+goto :continue
+:.autotest.@THROW
+	setlocal DisableDelayedExpansion
+	set "label=%0" & set ^"args=%*"
+	set "test=%label::.autotest.=%"
+	set "@tag=!@macro:~-4!"
+	set "@tag.expected=!=! "
+	set "params=!errlvl! errmsg"
+	setlocal EnableDelayedExpansion
+	set "@macro=!%test%!" & %@ASSERT.DEFINED:$$=@macro% && echo.|| exit /b 1
+	set "@tag=%@tag%"     & %@ASSERT.EQU:$$=@tag,@tag.expected% || exit /b 1
+
+	echo(!LF!Before:
+	set "errlvl=5"
+	set "errmsg=this is an error message"
+	set "@EXIT.PREHOOK=.autotest.@EXIT.PREHOOK"
+	set "@EXIT.POSTHOOK=.autotest.@EXIT.POSTHOOK"
+	for %%v in (errlvl msg) do if defined %%v (echo(  %%v=[!%%v!]) else echo(  %%v is undefined.
+
+	echo(!LF!Executing:  %%%test%%% %params%
+	%@macro% %params%
+
+	echo(Should not get here^!^!
+	exit /b 1
+:.autotest.@EXIT.PREHOOK [func] [errlvl]
+	setlocal DisableDelayedExpansion
+	echo.  Now in [%0]:
+	echo.  Exiting function %~1
+	exit /b 0
+:.autotest.@EXIT.POSTHOOK [script] [errlvl]
+	setlocal DisableDelayedExpansion
+	echo.  Now in [%0]:
+	echo.  Exiting script %~1 with errorlevel %2
 	exit /b 0
 :continue
-
-
-
-
+::==============================================================================
 
 
 
