@@ -1675,6 +1675,8 @@ goto :continue
 :::  The original values are maintained through any form of context switch,
 :::  even if the following (code block) uses 'endlocal' or '(goto)'
 :::
+:::  The value of ERRORLEVEL is also persisted.
+:::
 :::  Known limitations:
 :::  - It is not possible to restore variables containing linefeed (!LF!) in
 :::    DisableDelayedExpansion (DDE) environments. Only first line is restored.
@@ -1683,7 +1685,7 @@ goto :continue
 :::
 :::  Special characters '^' and '!' are escaped for restoration in both DDE and
 :::  EDE environments. If the destination's EDE/DDE state is known in advance,
-:::  use VAR.PUSHPOP.EDE/DDE, which skips some irrelavant code.
+:::  use VAR.PUSHPOP.EDE/DDE, which skips some irrelevant code.
 :::  VAR.PUSHPOP.DDE, in particular, is much faster, because it does not need to
 :::  'call set' to escape '!'.
 :::
@@ -1692,7 +1694,8 @@ for %%@ in (#@VAR.PUSHPOP) do if "!!"=="" (1>&2 echo(---^> Error in [%~nx0]: Mac
 ) else if not defined ##EOL (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ##EOL.& exit /b 1
 ) else if not defined ###LF (1>&2 echo(---^> Error in [%~nx0]: Macro %%@ definition requires ###LF.& exit /b 1
 ) else 2>nul set ^"%%@=if not "$$"=="" for %%L in (^^^^^^^"%###LF%^^^^^^^") do (%##EOL%
-setlocal EnableDelayedExpansion %##EOL%
+if ERRORLEVEL 1 (setlocal EnableDelayedExpansion ^^^& set "%%@.errlvl=1"%##EOL%
+) else setlocal EnableDelayedExpansion ^^^& set "%%@.errlvl=0"%##EOL%
 set "%%@.return="%##EOL%
 set "%%@.ede="%##EOL%
 for %%v in ($$) do (%##EOL%
@@ -1719,11 +1722,12 @@ if defined %%@.ede (%##EOL%
 )%##EOL%
 %= Run external code block, then return values =% %##EOL%
 echo return=[!%%@.return!]%##EOL%
-)^^^&for /f tokens^^^^=1*^^^^ delims^^^^=:^^^^ eol^^^^= %%1 in ("1%%~L2%%~L3%%~L!%%@.return!") do ^
-%= STEP 1  End local scope                =% if "%%1"=="1" (endlocal%##EOL%
+)^^^&for /f tokens^^^^=1*^^^^ delims^^^^=:^^^^ eol^^^^= %%1 in ("1%%~L2%%~L3%%~L!%%@.return!%%~L5:!%%@.errlvl!") do ^
+%= STEP 1  End local scope                =% if "%%1"=="1" (endlocal^^^&set "%%@.errlvl="%##EOL%
 %= STEP 3  Assign constants         =%) else if "%%1"=="3" (set "LF=%%~L"%##EOL%
 %= STEP 4D Set variables in DDE     =%) else if "%%1"=="D" (if not "!!"=="" %%2%##EOL%
 %= STEP 4E Set variables in EDE     =%) else if "%%1"=="E" (if "!!"=="" %%2!%##EOL%
+%= STEP 5  Set ERRORLEVEL           =%) else if "%%1"=="5" (set "ERRORLEVEL="^^^&if %%2==0 (call ) else (call)%##EOL%
 %= STEP 2  Run external code block  =%) else ^"
 set ^"@VAR.PUSHPOP=%#@VAR.PUSHPOP%"
 set ^"@VAR.PUSHPOP.DDE=%#@VAR.PUSHPOP:$EDE$=%"
